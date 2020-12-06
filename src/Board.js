@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
+import PropTypes from 'prop-types'
 import * as rl from './solitaire-rl'
 import './Board.css'
 
-const Board = () => {
+const Board = ({ entries }) => {
   const [dimensions, setDimensions] = useState(null)
   const svgElement = useRef(null)
   useEffect(() => {
@@ -24,7 +25,7 @@ const Board = () => {
         key={location.key}
         cx={dimensions.gridX * (location.col + 1)}
         cy={dimensions.gridY * (location.row + 1)}
-        r={dimensions.outerRadius}
+        r={dimensions.innerRadius}
         className="board-position"
       />
     )
@@ -32,7 +33,15 @@ const Board = () => {
 
   const renderBoardPieces = () => {
     if (!dimensions) return
-    // TODO
+    return entries.filter(([, isOccupied]) => isOccupied).map(([location]) =>
+      <circle
+        key={location.key}
+        cx={dimensions.gridX * (location.col + 1)}
+        cy={dimensions.gridY * (location.row + 1)}
+        r={dimensions.outerRadius}
+        className="board-piece"
+      />
+    )
   }
 
   return (
@@ -43,6 +52,10 @@ const Board = () => {
       </svg>
     </div>
   )
+}
+
+Board.propTypes = {
+  entries: PropTypes.array.isRequired
 }
 
 export default Board

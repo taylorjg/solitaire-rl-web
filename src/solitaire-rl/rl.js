@@ -116,7 +116,15 @@ const trainLoop = async (env, model, pi, saveFn) => {
 class BaseAgent {
   constructor() {
     this._env = new SolitaireEnv()
-    this._state = null
+    this._state = this._env.reset()
+  }
+
+  get entries() {
+    return observationToBoard(this._state).entries
+  }
+
+  get done() {
+    return this._env.done
   }
 
   reset = () => {
@@ -125,10 +133,6 @@ class BaseAgent {
   }
 
   step = () => {
-    if (this._state === null) {
-      throw new Error('Need to call reset before trying to step')
-    }
-
     if (this._env.done) {
       throw new Error('This episode is done - call reset to go again')
     }
