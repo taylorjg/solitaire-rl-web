@@ -113,20 +113,66 @@ const trainLoop = async (env, model, pi, saveFn) => {
   }
 }
 
-const playLoop = (env, pi) => {
-  const actions = []
-  let state = env.reset()
-  for (; ;) {
-    const [, action] = pi(state)
-    actions.push(action)
-    const [nextState, , done] = env.step(action)
-    if (done) {
-      console.log(`actions: ${actions.join(', ')}`)
-      env.render()
-      break
-    }
-    state = nextState
+class BaseAgent {
+  constructor() {
+    this._env = new SolitaireEnv()
+    this._state = null
   }
+
+  reset = () => {
+    this._state = this._env.reset()
+    return this._state
+  }
+
+  step = () => {
+    if (this._state === null) {
+      throw new Error('Need to call reset before trying to step')
+    }
+
+    if (this._env.done) {
+      throw new Error('This episode is done - call reset to go again')
+    }
+
+    const action = this.chooseAction()
+
+    const [state, reward, done] = this._env.step(action)
+    this._state = state
+    const entries = observationToBoard(this._state).entries
+    return { action, state, reward, done, entries }
+  }
+
+  chooseAction = () => {
+    throw new Error('Derived classes must override BaseAgent#chooseAction')
+  }
+}
+
+class RandomAgent extends BaseAgent {
+  chooseAction = () => {
+    const board = observationToBoard(this._state)
+    const validActions = board.validActions()
+    const action = randomChoice(validActions)
+    return action
+  }
+}
+
+class TrainedAgent extends BaseAgent {
+  constructor(model) {
+    super()
+    this._pi = makePolicy(model)
+  }
+
+  chooseAction = () => {
+    const [, action] = this._pi(this._state)
+    return action
+  }
+}
+
+export const makeRandomAgent = () =>
+  new RandomAgent()
+
+export const makeTrainedAgent = async modelPath => {
+  const model = await tf.loadLayersModel(modelPath)
+  return new TrainedAgent(model)
 }
 
 export const train = async saveFn => {
@@ -134,11 +180,4 @@ export const train = async saveFn => {
   const model = makeModel()
   const pi = makePolicy(model)
   await trainLoop(env, model, pi, saveFn)
-}
-
-export const play = async loadFn => {
-  const env = new SolitaireEnv()
-  const model = await loadFn()
-  const pi = makePolicy(model)
-  playLoop(env, pi)
 }

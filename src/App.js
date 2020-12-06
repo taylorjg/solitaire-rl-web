@@ -1,10 +1,10 @@
-import ControlledBoard from './ControlledBoard'
+import AutoPlayBoard from './AutoPlayBoard'
 import './App.css'
 
 function App() {
   return (
     <div className="App">
-      <ControlledBoard />
+      <AutoPlayBoard />
     </div>
   )
 }
