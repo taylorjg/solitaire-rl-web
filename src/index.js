@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom'
 import './index.css'
 import App from './App'
 import reportWebVitals from './reportWebVitals'
-import { playWrapper } from './solitaire/train-play'
+import * as rl from './solitaire-rl/rl'
 import * as tf from '@tensorflow/tfjs'
 
 ReactDOM.render(
@@ -19,7 +19,11 @@ ReactDOM.render(
 reportWebVitals()
 
 const playEpisode = async () => {
-  playWrapper(() => tf.loadLayersModel('/models/model.json'))
+  try {
+    await rl.play(() => tf.loadLayersModel('/models/model.json'))
+  } catch(error) {
+    console.log(`ERROR: ${error.message}`)
+  }
 }
 
 playEpisode()

@@ -58,7 +58,7 @@ const makePolicy = model => {
   }
 }
 
-const train = async (env, model, pi, saveFn) => {
+const trainLoop = async (env, model, pi, saveFn) => {
   const optimizer = tf.train.adam(LR)
   const lossFn = tf.losses.meanSquaredError
   const finalRewards = []
@@ -113,7 +113,7 @@ const train = async (env, model, pi, saveFn) => {
   }
 }
 
-const play = (env, pi) => {
+const playLoop = (env, pi) => {
   const actions = []
   let state = env.reset()
   for (; ;) {
@@ -129,16 +129,16 @@ const play = (env, pi) => {
   }
 }
 
-export const trainWrapper = async saveFn => {
+export const train = async saveFn => {
   const env = new SolitaireEnv()
   const model = makeModel()
   const pi = makePolicy(model)
-  await train(env, model, pi, saveFn)
+  await trainLoop(env, model, pi, saveFn)
 }
 
-export const playWrapper = async loadFn => {
+export const play = async loadFn => {
   const env = new SolitaireEnv()
   const model = await loadFn()
   const pi = makePolicy(model)
-  play(env, pi)
+  playLoop(env, pi)
 }
