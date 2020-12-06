@@ -82,7 +82,7 @@ function* iterActions() {
 }
 
 const CENTRE = new Location(3, 3)
-const LOCATIONS = Array.from(iterLocations())
+export const LOCATIONS = Array.from(iterLocations())
 const LOCATIONS_MAP = new Map(LOCATIONS.map(location => [location.key, location]))
 const ACTIONS = Array.from(iterActions())
 

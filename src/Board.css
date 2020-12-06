@@ -1,0 +1,17 @@
+.board {
+  background-color: aliceblue;
+  height: 400px;
+  width: 400px;
+}
+
+.board-position {
+  fill: brown;
+}
+
+.board-piece {
+  fill: black;
+}
+
+.board-piece--selected {
+  fill: magenta;
+}
