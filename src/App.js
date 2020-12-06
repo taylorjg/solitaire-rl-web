@@ -9,16 +9,30 @@ function App() {
 
   const [agent, setAgent] = useState(null)
 
-  useEffect(() => {
-    const makeAgent = async () => {
-      const agent = await rl.makeTrainedAgent(modelPath)
-      setAgent(agent)
+  useEffect(() => changeAgent('randomAgent'), [])
+
+  const changeAgent = async agentName => {
+    switch (agentName) {
+      case 'trainedAgent': {
+        const agent = await rl.makeTrainedAgent(modelPath)
+        setAgent(agent)
+        break
+      }
+      case 'randomAgent':
+      default: {
+        const agent = rl.makeRandomAgent()
+        setAgent(agent)
+        break
+      }
     }
-    makeAgent()
-  }, [])
+  }
 
   return (
     <div className="App">
+      <select onChange={e => changeAgent(e.target.value)}>
+        <option value="randomAgent">RandomAgent</option>
+        <option value="trainedAgent">TrainedAgent</option>
+      </select>
       <AutoPlayBoard agent={agent} />
     </div>
   )

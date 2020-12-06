@@ -24,7 +24,7 @@ const AutoPlayBoard = ({ agent }) => {
   return (
     <div>
       <Board entries={entries} />
-      <AutoPlayBoardControls onStep={onStep} onReset={onReset} />
+      <AutoPlayBoardControls agent={agent} onStep={onStep} onReset={onReset} />
     </div>
   )
 }

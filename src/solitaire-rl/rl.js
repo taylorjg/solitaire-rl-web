@@ -11,8 +11,8 @@ const MAX_EPISODES = 20000
 
 const makeModel = () => {
   const model = tf.sequential()
-  model.add(tf.layers.dense({ inputShape: [33], units: 20, activation: 'relu' }))
-  model.add(tf.layers.dense({ units: 1 }))
+  model.add(tf.layers.dense({ inputShape: [33], units: 20, activation: 'relu', name: 'input-layer' }))
+  model.add(tf.layers.dense({ units: 1, name: 'output-layer' }))
   return model
 }
 
@@ -124,7 +124,7 @@ class BaseAgent {
   }
 
   get done() {
-    return this._env.done
+    return observationToBoard(this._state).done
   }
 
   reset = () => {
@@ -133,7 +133,7 @@ class BaseAgent {
   }
 
   step = () => {
-    if (this._env.done) {
+    if (this.done) {
       throw new Error('This episode is done - call reset to go again')
     }
 

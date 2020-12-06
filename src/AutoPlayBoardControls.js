@@ -1,16 +1,16 @@
 import PropTypes from 'prop-types'
 
-const AutoPlayBoardControls = ({ onStep, onReset }) => {
-  // TODO: disable buttons appropriately
+const AutoPlayBoardControls = ({ agent, onStep, onReset }) => {
   return (
     <div>
-      <button type="button" onClick={onStep}>Step</button>
-      <button type="button" onClick={onReset}>Reset</button>
+      <button type="button" disabled={agent === null || agent.done} onClick={onStep}>Step</button>
+      <button type="button" disabled={agent === null} onClick={onReset}>Reset</button>
     </div>
   )
 }
 
 AutoPlayBoardControls.propTypes = {
+  agent: PropTypes.object,
   onStep: PropTypes.func.isRequired,
   onReset: PropTypes.func.isRequired
 }
