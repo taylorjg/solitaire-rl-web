@@ -1,7 +1,12 @@
 .board {
-  background-color: aliceblue;
-  height: 250px;
-  width: 250px;
+  height: 400px;
+  width: 400px;
+}
+
+.board-background {
+  fill: url(#board-1);
+  height: 100%;
+  width: 100%;
 }
 
 .board-position {
@@ -9,9 +14,9 @@
 }
 
 .board-piece {
-  fill: black;
+  fill: url(#marble-1)
 }
 
 .board-piece--selected {
-  fill: magenta;
+  stroke: magenta;
 }
