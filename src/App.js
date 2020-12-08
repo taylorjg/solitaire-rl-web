@@ -35,8 +35,8 @@ function App() {
         <div className="middle">
           <div className="board-controls-above">
             <select onChange={e => changeAgent(e.target.value)}>
-              <option value="randomAgent">RandomAgent</option>
-              <option value="trainedAgent">TrainedAgent</option>
+              <option value="randomAgent">Random Agent</option>
+              <option value="trainedAgent">Trained Agent</option>
             </select>
           </div>
           <AutoPlayBoard agent={agent} />

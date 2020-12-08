@@ -26,16 +26,18 @@ const makeLinearDecaySchedule = (startVal, endVal, decayPercent) => {
 }
 
 const evaluateValidActions = (model, state) => {
-  const currentBoard = observationToBoard(state)
-  const evaluateValidAction = action => {
-    const newBoard = currentBoard.makeMove(action)
-    const nextState = boardToObservation(newBoard)
-    return nextState
-  }
-  const validActions = currentBoard.validActions()
-  const nextStates = validActions.map(evaluateValidAction)
-  const nextStateValues = model.predict(tf.tensor(nextStates))
-  return U.zip(nextStateValues.dataSync(), validActions)
+  return tf.tidy(() => {
+    const currentBoard = observationToBoard(state)
+    const evaluateValidAction = action => {
+      const newBoard = currentBoard.makeMove(action)
+      const nextState = boardToObservation(newBoard)
+      return nextState
+    }
+    const validActions = currentBoard.validActions()
+    const nextStates = validActions.map(evaluateValidAction)
+    const nextStateValues = model.predict(tf.tensor(nextStates))
+    return U.zip(nextStateValues.dataSync(), validActions)
+  })
 }
 
 const randomChoice = xs => xs[Math.floor(Math.random() * xs.length)]
@@ -142,6 +144,7 @@ class BaseAgent {
     const [state, reward, done] = this._env.step(action)
     this._state = state
     const entries = observationToBoard(this._state).entries
+    console.log(JSON.stringify(tf.memory()))
     return { action, state, reward, done, entries }
   }
 
