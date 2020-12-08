@@ -3,11 +3,15 @@ import PropTypes from 'prop-types'
 import * as rl from './solitaire-rl'
 import './Board.css'
 
-const RANDOM_ROTATIONS = Array(33).fill(0).map(() => Math.random() * 90)
-
 const Board = ({ entries }) => {
+
+  const makeRandomRotations = () => Array(33).fill(0).map(() => Math.random() * 60 - 30)
+
   const [dimensions, setDimensions] = useState(null)
+  const [randomRotations, setRandomRotations] = useState(() => makeRandomRotations())
+
   const svgElement = useRef(null)
+
   useEffect(() => {
     if (svgElement.current) {
       const w = svgElement.current.clientWidth
@@ -15,10 +19,17 @@ const Board = ({ entries }) => {
       const gridX = w / 8
       const gridY = h / 8
       const innerRadius = Math.min(gridX, gridY) / 4
-      const outerRadius = Math.min(gridX, gridY) / 2.4
+      const outerRadius = Math.min(gridX, gridY) / 1.5
       setDimensions({ w, h, gridX, gridY, innerRadius, outerRadius })
     }
   }, [svgElement])
+
+  useEffect(() => {
+    const numOccupied = entries.filter(([, isOccupied]) => isOccupied).length
+    if (numOccupied === 32) {
+      setRandomRotations(makeRandomRotations())
+    }
+  }, [entries])
 
   const renderBoardPositions = () => {
     if (!dimensions) return
@@ -46,7 +57,7 @@ const Board = ({ entries }) => {
         r={dimensions.outerRadius}
         className="board-piece"
         style={{
-          transform: `rotate(${RANDOM_ROTATIONS[index]}deg)`,
+          transform: `rotate(${randomRotations[index]}deg)`,
           transformOrigin: `${cx}px ${cy}px`
         }}
       />
@@ -62,6 +73,9 @@ const Board = ({ entries }) => {
           </pattern>
           <pattern id="marble-1" height="100%" width="100%" patternContentUnits="objectBoundingBox">
             <image href="images/marble-1.png" preserveAspectRatio="none" width="1" height="1" />
+          </pattern>
+          <pattern id="marble-2" height="100%" width="100%" patternContentUnits="objectBoundingBox">
+            <image href="images/marble-2.png" preserveAspectRatio="none" width="1" height="1" />
           </pattern>
         </defs>
         <rect className="board-background"></rect>

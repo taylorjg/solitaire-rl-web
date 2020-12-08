@@ -28,7 +28,7 @@ const AutoPlayBoard = ({ agent }) => {
       agent.done
         ? clearInterval(runInterval.current)
         : onStep()
-    }, 250)
+    }, 500)
   }
 
   const onReset = () => {
