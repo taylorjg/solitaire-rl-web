@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import AutoPlayBoard from './AutoPlayBoard'
 import * as rl from './solitaire-rl'
+import { version } from '../package.json'
 import './App.css'
 
 const modelPath = '/models/model.json'
@@ -28,13 +29,20 @@ function App() {
   }
 
   return (
-    <div className="App">
-      <select onChange={e => changeAgent(e.target.value)}>
-        <option value="randomAgent">RandomAgent</option>
-        <option value="trainedAgent">TrainedAgent</option>
-      </select>
-      <AutoPlayBoard agent={agent} />
-    </div>
+    <>
+      <div className="version">version:&nbsp;<span>{version}</span></div>
+      <div className="outer">
+        <div className="middle">
+          <div className="board-controls-above">
+            <select onChange={e => changeAgent(e.target.value)}>
+              <option value="randomAgent">RandomAgent</option>
+              <option value="trainedAgent">TrainedAgent</option>
+            </select>
+          </div>
+          <AutoPlayBoard agent={agent} />
+        </div>
+      </div>
+    </>
   )
 }
 

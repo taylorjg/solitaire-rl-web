@@ -1,6 +1,8 @@
 .board {
-  height: 400px;
-  width: 400px;
+  box-sizing: border-box;
+  height: min(100vh, 100vw, 400px);
+  padding: .5rem;
+  width: min(100vh, 100vw, 400px);
 }
 
 .board-background {

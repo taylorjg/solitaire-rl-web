@@ -1,8 +1,9 @@
 import PropTypes from 'prop-types'
+import './AutoPlayBoardControls.css'
 
 const AutoPlayBoardControls = ({ agent, onStep, onRun, onReset }) => {
   return (
-    <div>
+    <div className="board-controls-below">
       <button type="button" disabled={agent === null || agent.done} onClick={onStep}>Step</button>
       <button type="button" disabled={agent === null || agent.done} onClick={onRun}>Run</button>
       <button type="button" disabled={agent === null} onClick={onReset}>Reset</button>

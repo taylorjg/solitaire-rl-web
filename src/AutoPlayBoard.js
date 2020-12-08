@@ -37,10 +37,10 @@ const AutoPlayBoard = ({ agent }) => {
   }
 
   return (
-    <div>
+    <>
       <Board entries={entries} />
       <AutoPlayBoardControls agent={agent} onStep={onStep} onRun={onRun} onReset={onReset} />
-    </div>
+    </>
   )
 }
 
