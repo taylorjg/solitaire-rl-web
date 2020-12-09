@@ -1,0 +1,17 @@
+.play-outer {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
+}
+
+.play-middle {
+  display: flex;
+  flex-direction: column;
+}
+
+.play-board-controls-above {
+  display: flex;
+  justify-content: center;
+}

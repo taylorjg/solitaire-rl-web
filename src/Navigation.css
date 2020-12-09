@@ -1,0 +1,29 @@
+.navigation {
+  position: absolute;
+  top: .5rem;
+  width: 100%;
+}
+
+.navigation-inner {
+  display: flex;
+  justify-content: center;
+}
+
+.navigation ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navigation ul > li {
+  display: inline-block;
+}
+
+.navigation-link--selected {
+  text-decoration: none;
+}
+
+.navigation ul > li + li::before {
+  margin: 0 .5rem;
+  content: "|";
+}

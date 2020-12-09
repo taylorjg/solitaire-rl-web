@@ -1,48 +1,24 @@
-import { useEffect, useState } from 'react'
-import AutoPlayBoard from './AutoPlayBoard'
-import * as rl from './solitaire-rl'
-import { version } from '../package.json'
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom"
+import Navigation from './Navigation'
+import PlayView from './PlayView'
+import TrainView from './TrainView'
+import Version from './Version'
 import './App.css'
 
-const modelPath = '/models/model.json'
-
-function App() {
-
-  const [agent, setAgent] = useState(null)
-
-  useEffect(() => changeAgent('randomAgent'), [])
-
-  const changeAgent = async agentName => {
-    switch (agentName) {
-      case 'trainedAgent': {
-        const agent = await rl.makeTrainedAgent(modelPath)
-        setAgent(agent)
-        break
-      }
-      case 'randomAgent':
-      default: {
-        const agent = rl.makeRandomAgent()
-        setAgent(agent)
-        break
-      }
-    }
-  }
-
+const App = () => {
   return (
-    <>
-      <div className="version">version:&nbsp;<span>{version}</span></div>
-      <div className="outer">
-        <div className="middle">
-          <div className="board-controls-above">
-            <select onChange={e => changeAgent(e.target.value)}>
-              <option value="randomAgent">Random Agent</option>
-              <option value="trainedAgent">Trained Agent</option>
-            </select>
-          </div>
-          <AutoPlayBoard agent={agent} />
-        </div>
-      </div>
-    </>
+    <Router>
+      <Navigation />
+      <Switch>
+        <Route exact path={['/', '/play']}>
+          <PlayView />
+        </Route>
+        <Route exact path="/train">
+          <TrainView />
+        </Route>
+      </Switch>
+      <Version />
+    </Router>
   )
 }
 

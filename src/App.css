@@ -2,29 +2,3 @@ body {
   margin: 0;
   padding: 0;
 }
-
-.version {
-  bottom: .5rem;
-  font-size: small;
-  font-style: italic;
-  position: absolute;
-  right: .5rem;
-}
-
-.outer {
-  align-items: center;
-  display: flex;
-  justify-content: center;
-  height: 100vh;
-  width: 100vw;
-}
-
-.middle {
-  display: flex;
-  flex-direction: column;
-}
-
-.board-controls-above {
-  display: flex;
-  justify-content: center;
-}

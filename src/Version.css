@@ -1,0 +1,7 @@
+.version {
+  bottom: .5rem;
+  font-size: small;
+  font-style: italic;
+  position: absolute;
+  right: .5rem;
+}
