@@ -1,28 +1,17 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import * as rl from './solitaire-rl'
 import './Board.css'
 
 const Board = ({ entries }) => {
 
-  const makeRandomRotations = () => Array(33).fill(0).map(() => Math.random() * 60 - 30)
-
-  const [dimensions, setDimensions] = useState(null)
+  const makeRandomRotations = () => rl.LOCATIONS.map(() => Math.random() * 60 - 30)
   const [randomRotations, setRandomRotations] = useState(() => makeRandomRotations())
 
-  const svgElement = useRef(null)
-
-  useEffect(() => {
-    if (svgElement.current) {
-      const w = svgElement.current.clientWidth
-      const h = svgElement.current.clientHeight
-      const gridX = w / 8
-      const gridY = h / 8
-      const innerRadius = Math.min(gridX, gridY) / 4
-      const outerRadius = Math.min(gridX, gridY) / 1.5
-      setDimensions({ w, h, gridX, gridY, innerRadius, outerRadius })
-    }
-  }, [svgElement])
+  const GRID_X = 100 / 8
+  const GRID_Y = 100 / 8
+  const HOLE_RADIUS = Math.min(GRID_X, GRID_Y) / 4
+  const MARBLE_RADIUS = Math.min(GRID_X, GRID_Y) / 1.5
 
   useEffect(() => {
     const numOccupied = entries.filter(([, isOccupied]) => isOccupied).length
@@ -31,31 +20,29 @@ const Board = ({ entries }) => {
     }
   }, [entries])
 
-  const renderBoardPositions = () => {
-    if (!dimensions) return
+  const renderHoles = () => {
     return rl.LOCATIONS.map(location =>
       <circle
         key={location.key}
-        cx={dimensions.gridX * (location.col + 1)}
-        cy={dimensions.gridY * (location.row + 1)}
-        r={dimensions.innerRadius}
-        className="board-position"
+        cx={GRID_X * (location.col + 1)}
+        cy={GRID_Y * (location.row + 1)}
+        r={HOLE_RADIUS}
+        className="board-hole"
       />
     )
   }
 
-  const renderBoardPieces = () => {
-    if (!dimensions) return
+  const renderMarbles = () => {
     return entries.map(([location, isOccupied], index) => {
       if (!isOccupied) return null
-      const cx = dimensions.gridX * (location.col + 1)
-      const cy = dimensions.gridY * (location.row + 1)
+      const cx = GRID_X * (location.col + 1)
+      const cy = GRID_Y * (location.row + 1)
       return <circle
         key={location.key}
         cx={cx}
         cy={cy}
-        r={dimensions.outerRadius}
-        className="board-piece"
+        r={MARBLE_RADIUS}
+        className="board-marble"
         style={{
           transform: `rotate(${randomRotations[index]}deg)`,
           transformOrigin: `${cx}px ${cy}px`
@@ -66,21 +53,18 @@ const Board = ({ entries }) => {
 
   return (
     <div>
-      <svg ref={svgElement} className="board">
+      <svg className="board" viewBox="0 0 100 100">
         <defs>
-          <pattern id="board-1" height="100%" width="100%" patternContentUnits="objectBoundingBox">
-            <image href="images/board-1.jpeg" preserveAspectRatio="none" width="1" height="1" />
+          <pattern id="board" height="100%" width="100%" patternContentUnits="objectBoundingBox">
+            <image href="images/board.jpeg" preserveAspectRatio="none" width="1" height="1" />
           </pattern>
-          <pattern id="marble-1" height="100%" width="100%" patternContentUnits="objectBoundingBox">
-            <image href="images/marble-1.png" preserveAspectRatio="none" width="1" height="1" />
-          </pattern>
-          <pattern id="marble-2" height="100%" width="100%" patternContentUnits="objectBoundingBox">
-            <image href="images/marble-2.png" preserveAspectRatio="none" width="1" height="1" />
+          <pattern id="marble" height="100%" width="100%" patternContentUnits="objectBoundingBox">
+            <image href="images/marble.png" preserveAspectRatio="none" width="1" height="1" />
           </pattern>
         </defs>
         <rect className="board-background"></rect>
-        {renderBoardPositions()}
-        {renderBoardPieces()}
+        {renderHoles()}
+        {renderMarbles()}
       </svg>
     </div>
   )

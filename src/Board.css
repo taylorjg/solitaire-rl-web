@@ -6,19 +6,15 @@
 }
 
 .board-background {
-  fill: url(#board-1);
+  fill: url(#board);
   height: 100%;
   width: 100%;
 }
 
-.board-position {
+.board-hole {
   fill: brown;
 }
 
-.board-piece {
-  fill: url(#marble-2)
-}
-
-.board-piece--selected {
-  stroke: magenta;
+.board-marble {
+  fill: url(#marble);
 }
