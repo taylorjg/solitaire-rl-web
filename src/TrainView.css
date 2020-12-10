@@ -1,12 +1,40 @@
-.train-outer {
-  align-items: center;
-  display: flex;
-  justify-content: center;
-  height: 100vh;
-  width: 100vw;
-}
-
-.train-middle {
+.train-content {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  margin: 2rem 0;
+}
+
+.train-content-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.train-content-inner * {
+  margin: .25rem 0;
+}
+
+.train-warning {
+  font-style: italic;
+}
+
+.train-timer {
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.train-controls {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.train-messages {
+  box-sizing: border-box;
+  background-color: black;
+  color: white;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: small;
+  padding: .5rem;
+  width: 100%;
 }

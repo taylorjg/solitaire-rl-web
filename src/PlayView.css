@@ -1,17 +1,12 @@
-.play-outer {
-  align-items: center;
-  display: flex;
-  justify-content: center;
-  height: 100vh;
+.play-content {
   width: 100vw;
-}
-
-.play-middle {
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
   display: flex;
   flex-direction: column;
-}
-
-.play-board-controls-above {
-  display: flex;
+  align-items: center;
   justify-content: center;
+  z-index: -1;
 }

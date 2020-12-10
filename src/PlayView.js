@@ -28,16 +28,12 @@ const PlayView = () => {
   }
 
   return (
-    <div className="play-outer">
-      <div className="play-middle">
-        <div className="play-board-controls-above">
-          <select onChange={e => changeAgent(e.target.value)}>
-            <option value="randomAgent">Random Agent</option>
-            <option value="trainedAgent">Trained Agent</option>
-          </select>
-        </div>
-        <AutoPlayBoard agent={agent} />
-      </div>
+    <div className="play-content">
+      <select onChange={e => changeAgent(e.target.value)}>
+        <option value="randomAgent">Random Agent</option>
+        <option value="trainedAgent">Trained Agent</option>
+      </select>
+      <AutoPlayBoard agent={agent} />
     </div>
   )
 }

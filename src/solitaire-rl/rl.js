@@ -60,7 +60,7 @@ const makePolicy = model => {
   }
 }
 
-const trainLoop = async (env, model, pi, saveFn) => {
+const trainLoop = async (env, model, pi, saveFn, progressFn) => {
   const optimizer = tf.train.adam(LR)
   const lossFn = tf.losses.meanSquaredError
   const finalRewards = []
@@ -76,37 +76,46 @@ const trainLoop = async (env, model, pi, saveFn) => {
       const [nextState, reward, done] = env.step(action)
       const stateValueTarget = reward + (1 - done) * GAMMA * nextStateValue
       const stateTensor = tf.tensor([state])
-
       optimizer.minimize(() => {
         const stateValue = model.apply(stateTensor)
-        const loss = lossFn(stateValue, tf.tensor([[stateValueTarget]]))
+        const targetTensor = tf.tensor([[stateValueTarget]])
+        const loss = lossFn(stateValue, targetTensor)
+        tf.dispose(targetTensor)
         return loss
       })
+      tf.dispose(stateTensor)
 
       if (done) {
-        finalRewards.push(reward)
-        if (reward > bestFinalReward) {
-          bestFinalReward = reward
+        const finalReward = reward
+        // console.log(JSON.stringify(tf.memory()))
+        finalRewards.push(finalReward)
+        if (finalReward > bestFinalReward) {
+          bestFinalReward = finalReward
         }
         let finalRewardMA = Number.NEGATIVE_INFINITY
         if (finalRewards.length > 100) {
-          finalRewardMA = tf.mean(finalRewards.slice(-100)).dataSync()[0]
+          const meanTensor = tf.mean(finalRewards.slice(-100))
+          finalRewardMA = meanTensor.dataSync()[0]
+          tf.dispose(meanTensor)
           finalRewardsMA.push(finalRewardMA)
           if (finalRewardMA > bestFinalRewardMA) {
             bestFinalRewardMA = finalRewardMA
           }
         }
-        console.log(
-          `episode: ${U.padInt(episode, 5)}; ` +
-          `epsilon: ${U.padReal(epsilon, 3)}; ` +
-          `final reward (best): ${U.padInt(reward, 5)} (${U.padInt(bestFinalReward, 5)}); ` +
-          `final reward ma (best): ${U.padReal(finalRewardMA, 3, 8)} (${U.padReal(bestFinalRewardMA, 3, 8)})`
-        )
+        progressFn({
+          episode,
+          epsilon,
+          finalReward,
+          bestFinalReward,
+          finalRewardMA,
+          bestFinalRewardMA
+        })
 
         if (finalRewardMA >= 50) {
           return saveFn(model)
         }
 
+        await tf.nextFrame()
         break
       }
 
@@ -144,7 +153,7 @@ class BaseAgent {
     const [state, reward, done] = this._env.step(action)
     this._state = state
     const entries = observationToBoard(this._state).entries
-    console.log(JSON.stringify(tf.memory()))
+    // console.log(JSON.stringify(tf.memory()))
     return { action, state, reward, done, entries }
   }
 
@@ -182,9 +191,9 @@ export const makeTrainedAgent = async modelPath => {
   return new TrainedAgent(model)
 }
 
-export const train = async saveFn => {
+export const train = async (saveFn, progressFn) => {
   const env = new SolitaireEnv()
   const model = makeModel()
   const pi = makePolicy(model)
-  await trainLoop(env, model, pi, saveFn)
+  await trainLoop(env, model, pi, saveFn, progressFn)
 }

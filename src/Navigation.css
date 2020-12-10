@@ -1,12 +1,7 @@
 .navigation {
-  position: absolute;
-  top: .5rem;
-  width: 100%;
-}
-
-.navigation-inner {
   display: flex;
   justify-content: center;
+  margin-top: .5rem;
 }
 
 .navigation ul {
@@ -24,6 +19,6 @@
 }
 
 .navigation ul > li + li::before {
-  margin: 0 .5rem;
   content: "|";
+  margin: 0 .5rem;
 }
