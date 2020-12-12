@@ -1,24 +1,56 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 import * as rl from './solitaire-rl'
 import './Board.css'
 
-const Board = ({ entries }) => {
+const GRID_X = 100 / 8
+const GRID_Y = 100 / 8
+const HOLE_RADIUS = Math.min(GRID_X, GRID_Y) / 4
+const MARBLE_RADIUS = Math.min(GRID_X, GRID_Y) / 1.5
 
-  const makeRandomRotations = () => rl.LOCATIONS.map(() => Math.random() * 60 - 30)
-  const [randomRotations, setRandomRotations] = useState(() => makeRandomRotations())
+const makeRandomRotation = () => Math.random() * 60 - 30
+const makeRandomRotationKvp = location => [location.key, makeRandomRotation()]
+const makeRandomRotationKvps = () => rl.LOCATIONS.map(makeRandomRotationKvp)
+const makeRandomRotationsMap = () => new Map(makeRandomRotationKvps())
 
-  const GRID_X = 100 / 8
-  const GRID_Y = 100 / 8
-  const HOLE_RADIUS = Math.min(GRID_X, GRID_Y) / 4
-  const MARBLE_RADIUS = Math.min(GRID_X, GRID_Y) / 1.5
+const Board = ({ resetBoard, previousEntries, action }) => {
+
+  const [randomRotations, setRandomRotations] = useState(() => makeRandomRotationsMap())
+
+  const viaPiece = useRef(null)
+  const fromPiece = useRef(null)
 
   useEffect(() => {
-    const numOccupied = entries.filter(([, isOccupied]) => isOccupied).length
-    if (numOccupied === 32) {
-      setRandomRotations(makeRandomRotations())
+    if (resetBoard) {
+      setRandomRotations(makeRandomRotationsMap())
     }
-  }, [entries])
+  }, [previousEntries, resetBoard])
+
+  useEffect(() => {
+    if (action) {
+      if (viaPiece.current) {
+        viaPiece.current.style.opacity = 0
+      }
+      if (fromPiece.current) {
+        const cx = GRID_X * (action.toLocation.col + 1)
+        const cy = GRID_Y * (action.toLocation.row + 1)
+        fromPiece.current.setAttribute("cx", cx)
+        fromPiece.current.setAttribute("cy", cy)
+        fromPiece.current.style.transformOrigin = `${cx}px ${cy}px`
+      }
+      updateRandomRotationOfToLocation(action)
+    }
+  }, [action])
+
+  const updateRandomRotationOfToLocation = action => {
+    const { fromLocation, toLocation } = action
+    setRandomRotations(randomRotations => {
+      const randomRotations2 = new Map(randomRotations)
+      const fromLocationRandomRotation = randomRotations2.get(fromLocation.key)
+      randomRotations2.set(toLocation.key, fromLocationRandomRotation)
+      return randomRotations2
+    })
+  }
 
   const renderHoles = () => {
     return rl.LOCATIONS.map(location =>
@@ -33,21 +65,30 @@ const Board = ({ entries }) => {
   }
 
   const renderMarbles = () => {
-    return entries.map(([location, isOccupied], index) => {
+    return previousEntries.map(([location, isOccupied]) => {
       if (!isOccupied) return null
       const cx = GRID_X * (location.col + 1)
       const cy = GRID_Y * (location.row + 1)
-      return <circle
-        key={location.key}
-        cx={cx}
-        cy={cy}
-        r={MARBLE_RADIUS}
-        className="board-marble"
-        style={{
-          transform: `rotate(${randomRotations[index]}deg)`,
+      const props = {
+        key: location.key,
+        cx,
+        cy,
+        r: MARBLE_RADIUS,
+        className: 'board-marble',
+        style: {
+          transform: `rotate(${randomRotations.get(location.key)}deg)`,
           transformOrigin: `${cx}px ${cy}px`
-        }}
-      />
+        }
+      }
+      if (action && location.sameAs(action.viaLocation)) {
+        props.className += ' board-marble--disappear'
+        return <circle ref={viaPiece} {...props} />
+      }
+      if (action && location.sameAs(action.fromLocation)) {
+        props.className += ' board-marble--move'
+        return <circle ref={fromPiece} {...props} />
+      }
+      return <circle {...props} />
     })
   }
 
@@ -71,7 +112,9 @@ const Board = ({ entries }) => {
 }
 
 Board.propTypes = {
-  entries: PropTypes.array.isRequired
+  resetBoard: PropTypes.bool.isRequired,
+  previousEntries: PropTypes.array.isRequired,
+  action: PropTypes.object
 }
 
 export default Board

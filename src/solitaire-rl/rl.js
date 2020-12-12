@@ -1,5 +1,5 @@
 import * as tf from '@tensorflow/tfjs'
-import { SolitaireEnv, observationToBoard, boardToObservation } from './solitaire-env'
+import { SolitaireEnv, observationToBoard, boardToObservation, ACTIONS } from './solitaire-env'
 import * as U from './utils'
 
 const LR = 0.001
@@ -35,7 +35,10 @@ const evaluateValidActions = (model, state) => {
     }
     const validActions = currentBoard.validActions()
     const nextStates = validActions.map(evaluateValidAction)
+    const predictStart = performance.now()
     const nextStateValues = model.predict(tf.tensor(nextStates))
+    const predictEnd = performance.now()
+    console.log(`predictElapsed: ${(predictEnd - predictStart).toFixed(2)}; nextStates.length: ${nextStates.length}`)
     return U.zip(nextStateValues.dataSync(), validActions)
   })
 }
@@ -76,6 +79,7 @@ const trainLoop = async (env, model, pi, saveFn, progressFn) => {
       const [nextState, reward, done] = env.step(action)
       const stateValueTarget = reward + (1 - done) * GAMMA * nextStateValue
       const stateTensor = tf.tensor([state])
+      const optStart = performance.now()
       optimizer.minimize(() => {
         const stateValue = model.apply(stateTensor)
         const targetTensor = tf.tensor([[stateValueTarget]])
@@ -84,10 +88,12 @@ const trainLoop = async (env, model, pi, saveFn, progressFn) => {
         return loss
       })
       tf.dispose(stateTensor)
+      const optEnd = performance.now()
+      console.log(`optElapsed: ${(optEnd - optStart).toFixed(2)}`)
 
       if (done) {
-        const finalReward = reward
         // console.log(JSON.stringify(tf.memory()))
+        const finalReward = reward
         finalRewards.push(finalReward)
         if (finalReward > bestFinalReward) {
           bestFinalReward = finalReward
@@ -96,11 +102,11 @@ const trainLoop = async (env, model, pi, saveFn, progressFn) => {
         if (finalRewards.length > 100) {
           const meanTensor = tf.mean(finalRewards.slice(-100))
           finalRewardMA = meanTensor.dataSync()[0]
-          tf.dispose(meanTensor)
           finalRewardsMA.push(finalRewardMA)
           if (finalRewardMA > bestFinalRewardMA) {
             bestFinalRewardMA = finalRewardMA
           }
+          tf.dispose(meanTensor)
         }
         progressFn({
           episode,
@@ -148,13 +154,15 @@ class BaseAgent {
       throw new Error('This episode is done - call reset to go again')
     }
 
-    const action = this.chooseAction()
+    const actionIndex = this.chooseAction()
+    const action = ACTIONS[actionIndex]
 
-    const [state, reward, done] = this._env.step(action)
+    const [state, reward, done] = this._env.step(actionIndex)
+    const previousEntries = observationToBoard(this._state).entries
     this._state = state
     const entries = observationToBoard(this._state).entries
     // console.log(JSON.stringify(tf.memory()))
-    return { action, state, reward, done, entries }
+    return { state, reward, done, entries, previousEntries, action }
   }
 
   chooseAction = () => {

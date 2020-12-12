@@ -18,3 +18,11 @@
 .board-marble {
   fill: url(#marble);
 }
+
+.board-marble--disappear {
+  transition: all 400ms ease-in 200ms;
+}
+
+.board-marble--move {
+  transition: all 400ms ease-in;
+}
