@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
+import { Spring } from 'react-spring/renderprops'
 import * as rl from './solitaire-rl'
 import './Board.css'
 
@@ -13,12 +14,12 @@ const makeRandomRotationKvp = location => [location.key, makeRandomRotation()]
 const makeRandomRotationKvps = () => rl.LOCATIONS.map(makeRandomRotationKvp)
 const makeRandomRotationsMap = () => new Map(makeRandomRotationKvps())
 
+const makeTransformCSS = angle => `rotate(${angle}deg)`
+const makeTransformOriginCSS = (cx, cy) => `${cx}% ${cy}%`
+
 const Board = ({ resetBoard, previousEntries, action }) => {
 
   const [randomRotations, setRandomRotations] = useState(() => makeRandomRotationsMap())
-
-  const viaPiece = useRef(null)
-  const fromPiece = useRef(null)
 
   useEffect(() => {
     if (resetBoard) {
@@ -26,29 +27,11 @@ const Board = ({ resetBoard, previousEntries, action }) => {
     }
   }, [previousEntries, resetBoard])
 
-  useEffect(() => {
-    if (action) {
-      if (viaPiece.current) {
-        viaPiece.current.style.opacity = 0
-      }
-      if (fromPiece.current) {
-        const cx = GRID_X * (action.toLocation.col + 1)
-        const cy = GRID_Y * (action.toLocation.row + 1)
-        fromPiece.current.setAttribute("cx", cx)
-        fromPiece.current.setAttribute("cy", cy)
-        fromPiece.current.style.transformOrigin = `${cx}px ${cy}px`
-      }
-      updateRandomRotationOfToLocation(action)
-    }
-  }, [action])
-
   const updateRandomRotationOfToLocation = action => {
     const { fromLocation, toLocation } = action
     setRandomRotations(randomRotations => {
-      const randomRotations2 = new Map(randomRotations)
-      const fromLocationRandomRotation = randomRotations2.get(fromLocation.key)
-      randomRotations2.set(toLocation.key, fromLocationRandomRotation)
-      return randomRotations2
+      const angle = randomRotations.get(fromLocation.key)
+      return new Map(randomRotations).set(toLocation.key, angle)
     })
   }
 
@@ -65,30 +48,62 @@ const Board = ({ resetBoard, previousEntries, action }) => {
   }
 
   const renderMarbles = () => {
-    return previousEntries.map(([location, isOccupied]) => {
-      if (!isOccupied) return null
+    const occupiedEntries = previousEntries.filter(([, isOccupied]) => isOccupied)
+    const occupiedLocations = occupiedEntries.map(([location]) => location)
+    const index = occupiedLocations.findIndex(location => action && location.sameAs(action.fromLocation))
+    if (index >= 0) {
+      const itemsRemoved = occupiedLocations.splice(index, 1)
+      occupiedLocations.splice(occupiedLocations.length, 0, ...itemsRemoved)
+    }
+    return occupiedLocations.map(location => {
       const cx = GRID_X * (location.col + 1)
       const cy = GRID_Y * (location.row + 1)
+      const angle = randomRotations.get(location.key)
       const props = {
         key: location.key,
         cx,
         cy,
         r: MARBLE_RADIUS,
         className: 'board-marble',
-        style: {
-          transform: `rotate(${randomRotations.get(location.key)}deg)`,
-          transformOrigin: `${cx}px ${cy}px`
-        }
       }
+      const style = {
+        transform: makeTransformCSS(angle),
+        transformOrigin: makeTransformOriginCSS(cx, cy)
+      }
+
+      // Animate the piece that is being removed from the board
       if (action && location.sameAs(action.viaLocation)) {
-        props.className += ' board-marble--disappear'
-        return <circle ref={viaPiece} {...props} />
+        return (
+          <Spring
+            key={location.key}
+            config={{ duration: 300, delay: 300 }}
+            from={{ opacity: 1 }}
+            to={{ opacity: 0 }}
+          >
+            {springProps => <circle {...props} style={{ ...style, ...springProps }} />}
+          </Spring>
+        )
       }
+
+      // Animate the piece that is being moved
       if (action && location.sameAs(action.fromLocation)) {
-        props.className += ' board-marble--move'
-        return <circle ref={fromPiece} {...props} />
+        const cxTo = GRID_X * (action.toLocation.col + 1)
+        const cyTo = GRID_Y * (action.toLocation.row + 1)
+        return (
+          <Spring
+            key={location.key}
+            config={{ duration: 600 }}
+            from={{ cx, cy, transformOrigin: makeTransformOriginCSS(cx, cy) }}
+            to={{ cx: cxTo, cy: cyTo, transformOrigin: makeTransformOriginCSS(cxTo, cyTo) }}
+            onRest={() => updateRandomRotationOfToLocation(action)}
+          >
+            {springProps => <circle {...props} style={{ ...style, ...springProps }} />}
+          </Spring>
+        )
       }
-      return <circle {...props} />
+
+      // Draw a regular piece
+      return <circle {...props} style={style} />
     })
   }
 

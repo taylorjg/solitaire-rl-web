@@ -12,14 +12,10 @@ const AutoPlayBoard = ({ agent }) => {
 
   useEffect(() => {
     if (agent) {
-      // This is a bit of hack. See onReset() below for more details.
-      setPreviousEntries([])
-      setTimeout(() => {
-        agent.reset()
-        setPreviousEntries(agent.entries)
-        setResetBoard(true)
-        setAction(null)
-      }, 0)
+      agent.reset()
+      setPreviousEntries(agent.entries)
+      setResetBoard(true)
+      setAction(null)
     } else {
       setResetBoard(true)
       setPreviousEntries([])
@@ -55,24 +51,13 @@ const AutoPlayBoard = ({ agent }) => {
   }
 
   const onReset = () => {
-    if (!agent) return
     if (resetBoard) {
       setPreviousEntries(agent.entries)
     } else {
-      // This is a bit of hack. Briefly remove all marbles from the board.
-      // Without doing this, something seems to get out of sync as can be
-      // seen by doing the following:
-      // - comment out the "setPreviousEntries([])" line
-      // - click Run and let it finish
-      // - click Reset
-      // - observe that the board does not reset properly
-      setPreviousEntries([])
-      setTimeout(() => {
-        agent.reset()
-        setPreviousEntries(agent.entries)
-        setResetBoard(true)
-        setAction(null)
-      }, 0)
+      agent.reset()
+      setPreviousEntries(agent.entries)
+      setResetBoard(true)
+      setAction(null)
     }
   }
 
