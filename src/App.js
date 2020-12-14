@@ -1,8 +1,10 @@
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom"
+import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-dom"
 import Navigation from './Navigation'
-import PlayView from './PlayView'
+import ManualPlayView from './ManualPlayView'
+import AgentPlayView from './AgentPlayView'
 import TrainView from './TrainView'
 import Version from './Version'
+import { ROUTES } from './routes'
 import './App.css'
 
 const App = () => {
@@ -10,11 +12,17 @@ const App = () => {
     <Router>
       <Navigation />
       <Switch>
-        <Route exact path={['/', '/play']}>
-          <PlayView />
+        <Route path={ROUTES.manualPlayView}>
+          <ManualPlayView />
         </Route>
-        <Route exact path="/train">
+        <Route path={ROUTES.agentPlayView}>
+          <AgentPlayView />
+        </Route>
+        <Route path={ROUTES.trainView}>
           <TrainView />
+        </Route>
+        <Route path={ROUTES.home}>
+          <Redirect to={ROUTES.agentPlayView} />
         </Route>
       </Switch>
       <Version />

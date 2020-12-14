@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
-import PropTypes from 'prop-types'
 import Board from './Board'
-import AutoPlayBoardControls from './AutoPlayBoardControls'
+import * as rl from './solitaire-rl'
+import './AgentPlayView.css'
 
-const AutoPlayBoard = ({ agent }) => {
+const modelPath = '/models/model.json'
 
+const AgentPlayView = () => {
+
+  const [agent, setAgent] = useState(null)
   const [previousEntries, setPreviousEntries] = useState(agent?.entries ?? [])
   const [action, setAction] = useState(null)
   const [resetBoard, setResetBoard] = useState(true)
@@ -30,6 +33,8 @@ const AutoPlayBoard = ({ agent }) => {
     return () => clearInterval(runInterval.current)
   }, [])
 
+  useEffect(() => changeAgent('randomAgent'), [])
+
   const onStep = () => {
     const stepResult = agent.step()
     setResetBoard(false)
@@ -50,6 +55,11 @@ const AutoPlayBoard = ({ agent }) => {
     }, 1000)
   }
 
+  const onStop = () => {
+    clearInterval(runInterval.current)
+    setRunning(false)
+  }
+
   const onReset = () => {
     if (resetBoard) {
       setPreviousEntries(agent.entries)
@@ -61,25 +71,46 @@ const AutoPlayBoard = ({ agent }) => {
     }
   }
 
+  const changeAgent = async agentName => {
+    switch (agentName) {
+      case 'trainedAgent': {
+        const agent = await rl.makeTrainedAgent(modelPath)
+        setAgent(agent)
+        break
+      }
+      case 'randomAgent':
+      default: {
+        const agent = rl.makeRandomAgent()
+        setAgent(agent)
+        break
+      }
+    }
+  }
+
   return (
-    <>
+    <div className="agent-play-content">
+      <div className="board-controls-above">
+        <select onChange={e => changeAgent(e.target.value)} disabled={running}>
+          <option value="randomAgent">Random Agent</option>
+          <option value="trainedAgent">Trained Agent</option>
+        </select>
+      </div>
+
       <Board
         resetBoard={resetBoard}
         previousEntries={previousEntries}
         action={action} />
 
-      <AutoPlayBoardControls
-        agent={agent}
-        onStep={onStep}
-        onRun={onRun}
-        onReset={onReset}
-        running={running} />
-    </>
+      <div className="board-controls-below">
+        <button type="button" disabled={agent === null || agent.done || running} onClick={onStep}>Step</button>
+        {running
+          ? <button type="button" onClick={onStop}>Stop</button>
+          : <button type="button" disabled={agent === null || agent.done} onClick={onRun}>Run</button>
+        }
+        <button type="button" disabled={agent === null || running} onClick={onReset}>Reset</button>
+      </div>
+    </div>
   )
 }
 
-AutoPlayBoard.propTypes = {
-  agent: PropTypes.object
-}
-
-export default AutoPlayBoard
+export default AgentPlayView

@@ -1,4 +1,5 @@
-import { NavLink } from "react-router-dom"
+import { NavLink } from 'react-router-dom'
+import { ROUTES } from './routes'
 import './Navigation.css'
 
 const Navigation = () => {
@@ -6,10 +7,13 @@ const Navigation = () => {
     <div className="navigation">
       <ul>
         <li>
-          <NavLink to="/play" activeClassName="navigation-link--selected">Play</NavLink>
+          <NavLink to={ROUTES.manualPlayView} activeClassName="navigation-link--active">Manual Play</NavLink>
         </li>
         <li>
-          <NavLink to="/train" activeClassName="navigation-link--selected">Train</NavLink>
+          <NavLink to={ROUTES.agentPlayView} activeClassName="navigation-link--active">Agent Play</NavLink>
+        </li>
+        <li>
+          <NavLink to={ROUTES.trainView} activeClassName="navigation-link--active">Train</NavLink>
         </li>
       </ul>
     </div>

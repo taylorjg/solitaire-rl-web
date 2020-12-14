@@ -14,7 +14,7 @@
   display: inline-block;
 }
 
-.navigation-link--selected {
+.navigation-link--active {
   text-decoration: none;
 }
 

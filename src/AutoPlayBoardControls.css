@@ -1,8 +1,0 @@
-.board-controls-below {
-  display: flex;
-  justify-content: center;
-}
-
-.board-controls-below * {
-  margin: 0 .25rem;
-}
