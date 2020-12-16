@@ -16,3 +16,11 @@ export const snd = pair => pair[1]
 
 export const padInt = (n, w) => n.toString().padStart(w)
 export const padReal = (n, f, w) => w ? n.toFixed(f).padStart(w) : n.toFixed(f)
+
+export const moveToLast = (xs, predicate) => {
+  const index = xs.findIndex(predicate)
+  if (index >= 0) {
+    const [x] = xs.splice(index, 1)
+    xs.splice(xs.length, 0, x)
+  }
+}

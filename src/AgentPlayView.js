@@ -99,7 +99,8 @@ const AgentPlayView = () => {
       <Board
         resetBoard={resetBoard}
         previousEntries={previousEntries}
-        action={action} />
+        action={action}
+      />
 
       <div className="board-controls-below">
         <button type="button" disabled={agent === null || agent.done || running} onClick={onStep}>Step</button>

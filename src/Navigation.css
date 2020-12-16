@@ -16,6 +16,7 @@
 
 .navigation-link--active {
   text-decoration: none;
+  font-weight: bold;
 }
 
 .navigation ul > li + li::before {

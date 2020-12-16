@@ -15,6 +15,17 @@
   fill: brown;
 }
 
+.board-hole--highlight {
+  stroke: magenta;
+  stroke-width: 1;
+}
+
 .board-marble {
   fill: url(#marble);
+}
+
+.board-marble-highlight {
+  fill: none;
+  stroke: magenta;
+  stroke-width: 1;
 }

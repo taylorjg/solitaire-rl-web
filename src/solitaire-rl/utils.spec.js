@@ -50,4 +50,16 @@ describe('utils', () => {
   it('padReal (with width)', () => {
     expect(U.padReal(12.1239, 3, 8)).toEqual('  12.124')
   })
+
+  it('moveToLast (element present)', () => {
+    const xs = [0, 1, 2, 3, 4, 99, 6, 7, 8, 9]
+    U.moveToLast(xs, x => x === 99)
+    expect(xs).toEqual([0, 1, 2, 3, 4, 6, 7, 8, 9, 99])
+  })
+
+  it('moveToLast (element not present)', () => {
+    const xs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    U.moveToLast(xs, x => x === 99)
+    expect(xs).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+  })
 })
