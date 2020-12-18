@@ -126,7 +126,7 @@ class Board {
 
   location = location => this._boardState.get(location.key)
 
-  get entries() {
+  entries() {
     return Array.from(this._boardState.entries())
       .map(([locationKey, isOccupied]) => [LOCATIONS_MAP.get(locationKey), isOccupied])
   }
@@ -169,6 +169,14 @@ export class SolitaireEnv {
     return [obs, reward, done, EMPTY_INFO]
   }
 
+  validActions() {
+    return this._board.validActions()
+  }
+
+  entries() {
+    return this._board.entries()
+  }
+
   render = () => {
     for (const row of U.rangeIter(7)) {
       let line = ''
@@ -186,7 +194,7 @@ export class SolitaireEnv {
 
   _calculateFinalReward = () => {
     let reward = 0
-    for (const [location, isOccupied] of this._board.entries) {
+    for (const [location, isOccupied] of this._board.entries()) {
       if (isOccupied) {
         const { row, col } = location
         const rowDiff = Math.abs(row - CENTRE.row)

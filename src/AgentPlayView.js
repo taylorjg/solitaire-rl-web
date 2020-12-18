@@ -8,20 +8,20 @@ const modelPath = '/models/model.json'
 const AgentPlayView = () => {
 
   const [agent, setAgent] = useState(null)
-  const [previousEntries, setPreviousEntries] = useState(agent?.entries ?? [])
-  const [action, setAction] = useState(null)
   const [resetBoard, setResetBoard] = useState(true)
+  const [entries, setEntries] = useState(agent?.entries() ?? [])
+  const [action, setAction] = useState(null)
   const [running, setRunning] = useState(false)
 
   useEffect(() => {
     if (agent) {
       agent.reset()
-      setPreviousEntries(agent.entries)
       setResetBoard(true)
+      setEntries(agent.entries())
       setAction(null)
     } else {
       setResetBoard(true)
-      setPreviousEntries([])
+      setEntries([])
       setAction(null)
     }
   }, [agent])
@@ -38,7 +38,7 @@ const AgentPlayView = () => {
   const onStep = () => {
     const stepResult = agent.step()
     setResetBoard(false)
-    setPreviousEntries(stepResult.previousEntries)
+    setEntries(stepResult.entries)
     setAction(stepResult.action)
   }
 
@@ -62,11 +62,11 @@ const AgentPlayView = () => {
 
   const onReset = () => {
     if (resetBoard) {
-      setPreviousEntries(agent.entries)
+      setEntries(agent.entries())
     } else {
       agent.reset()
-      setPreviousEntries(agent.entries)
       setResetBoard(true)
+      setEntries(agent.entries())
       setAction(null)
     }
   }
@@ -98,7 +98,7 @@ const AgentPlayView = () => {
 
       <Board
         resetBoard={resetBoard}
-        previousEntries={previousEntries}
+        entries={entries}
         action={action}
       />
 

@@ -6,33 +6,26 @@ import './ManualPlayView.css'
 const ManualPlayView = () => {
 
   const [env] = useState(() => new rl.SolitaireEnv())
-  const [board, setBoard] = useState(null)
-  const [previousEntries, setPreviousEntries] = useState([])
-  const [action, setAction] = useState(null)
   const [resetBoard, setResetBoard] = useState(true)
+  const [entries, setEntries] = useState([])
+  const [action, setAction] = useState(null)
 
   useEffect(() => {
-    const obs = env.reset()
-    const board = rl.observationToBoard(obs)
-    setBoard(board)
-    setPreviousEntries(board.entries)
+    env.reset()
     setResetBoard(true)
+    setEntries(env.entries())
     setAction(null)
   }, [env])
 
   const onReset = () => {
-    const obs = env.reset()
-    const board = rl.observationToBoard(obs)
-    setBoard(board)
-    setPreviousEntries(board.entries)
+    env.reset()
     setResetBoard(true)
+    setEntries(env.entries())
     setAction(null)
   }
 
-  const validateFromToSelections = ({ fromLocation, toLocation }) => {
-    console.log(`[validateFromToSelections] fromLocation: ${fromLocation ? fromLocation.key : '-'}; toLocation: ${toLocation ? toLocation.key : '-'}`)
-    if (!board) return
-    const validActionIndices = board.validActions()
+  const validateManualMove = ({ fromLocation, toLocation }) => {
+    const validActionIndices = env.validActions()
     return validActionIndices.filter(actionIndex => {
       const action = rl.ACTIONS[actionIndex]
       const fromLocationCheck = fromLocation ? action.fromLocation.sameAs(fromLocation) : true
@@ -41,14 +34,11 @@ const ManualPlayView = () => {
     })
   }
 
-  const manualStep = actionIndex => {
+  const makeManualMove = actionIndex => {
     if (env.done) return
-    const oldBoard = board
-    const [obs] = env.step(actionIndex)
-    const newBoard = rl.observationToBoard(obs)
-    setBoard(newBoard)
-    setPreviousEntries(oldBoard.entries)
+    env.step(actionIndex)
     setResetBoard(false)
+    setEntries(env.entries())
     setAction(rl.ACTIONS[actionIndex])
   }
 
@@ -56,10 +46,10 @@ const ManualPlayView = () => {
     <div className="manual-play-content">
       <Board
         resetBoard={resetBoard}
-        previousEntries={previousEntries}
+        entries={entries}
         action={action}
-        validateFromToSelections={validateFromToSelections}
-        manualStep={manualStep}
+        validateManualMove={validateManualMove}
+        makeManualMove={makeManualMove}
       />
 
       <div className="board-controls-below">

@@ -136,8 +136,8 @@ class BaseAgent {
     this._state = this._env.reset()
   }
 
-  get entries() {
-    return observationToBoard(this._state).entries
+  entries() {
+    return this._env.entries()
   }
 
   get done() {
@@ -158,11 +158,10 @@ class BaseAgent {
     const action = ACTIONS[actionIndex]
 
     const [state, reward, done] = this._env.step(actionIndex)
-    const previousEntries = observationToBoard(this._state).entries
     this._state = state
-    const entries = observationToBoard(this._state).entries
+    const entries = this._env.entries()
     // console.log(JSON.stringify(tf.memory()))
-    return { state, reward, done, entries, previousEntries, action }
+    return { state, reward, done, entries, action }
   }
 
   chooseAction = () => {

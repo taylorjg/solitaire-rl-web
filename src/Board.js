@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Spring } from 'react-spring/renderprops.cjs'
 import * as rl from './solitaire-rl'
-import * as U from './solitaire-rl/utils'
 import './Board.css'
 
 const GRID_X = 100 / 8
@@ -21,140 +20,185 @@ const makeTransformOriginStyle = (cx, cy) => `${cx}% ${cy}%`
 
 const Board = ({
   resetBoard,
-  previousEntries,
+  entries,
   action,
-  validateFromToSelections,
-  manualStep
+  validateManualMove,
+  makeManualMove
 }) => {
-  console.log('Board render')
-
   const [randomRotations, setRandomRotations] = useState(() => makeRandomRotationsMap())
-  const [holeHighlight, setHoleHighlight] = useState(null)
+  const [showViaMarble, setShowViaMarble] = useState(false)
   const [marbleHighlight, setMarbleHighlight] = useState(null)
+  const [holeHighlight, setHoleHighlight] = useState(null)
 
   useEffect(() => {
     if (resetBoard) {
       setRandomRotations(makeRandomRotationsMap())
     }
-  }, [previousEntries, resetBoard])
+  }, [entries, resetBoard])
 
   useEffect(() => {
-    setHoleHighlight(null)
+    setShowViaMarble(Boolean(action))
     setMarbleHighlight(null)
+    setHoleHighlight(null)
   }, [action])
 
+  const onSelectHole = location => () => {
+    if (holeHighlight === location) {
+      setHoleHighlight(null)
+    } else {
+      const fromLocation = marbleHighlight
+      const toLocation = location
+      const validActionIndices = validateManualMove({ fromLocation, toLocation })
+      console.log(`validActionIndices: ${JSON.stringify(validActionIndices)}`)
+      if (validActionIndices.length) {
+        setHoleHighlight(location)
+        if (validActionIndices.length === 1 && fromLocation) {
+          makeManualMove(validActionIndices[0])
+        }
+      }
+    }
+  }
+
+  const onSelectMarble = location => () => {
+    if (marbleHighlight === location) {
+      setMarbleHighlight(null)
+    } else {
+      const fromLocation = location
+      const toLocation = holeHighlight
+      const validActionIndices = validateManualMove({ fromLocation, toLocation })
+      console.log(`validActionIndices: ${JSON.stringify(validActionIndices)}`)
+      if (validActionIndices.length) {
+        setMarbleHighlight(fromLocation)
+        if (validActionIndices.length === 1 && toLocation) {
+          makeManualMove(validActionIndices[0])
+        }
+      }
+    }
+  }
+
+  const locationToCircleCentre = location => [
+    GRID_X + GRID_X * location.col,
+    GRID_Y + GRID_Y * location.row
+  ]
+
   const renderHoles = () => {
-    return rl.LOCATIONS.map(location =>
-      <circle
-        key={location.key}
-        cx={GRID_X * (location.col + 1)}
-        cy={GRID_Y * (location.row + 1)}
-        r={HOLE_RADIUS}
-        className={`board-hole ${holeHighlight === location ? 'board-hole--highlight' : ''}`}
-        onClick={() => {
-          console.log(`[hole click] location: ${location.key}`)
-          if (holeHighlight === location) {
-            setHoleHighlight(null)
-          } else {
-            const fromLocation = marbleHighlight
-            const toLocation = location
-            const validActionIndices = validateFromToSelections({ fromLocation, toLocation })
-            console.log(`validActionIndices: ${JSON.stringify(validActionIndices)}`)
-            if (validActionIndices.length) {
-              setHoleHighlight(location)
-              if (validActionIndices.length === 1 && fromLocation) {
-                manualStep(validActionIndices[0])
-              }
-            }
-          }
-        }}
-      />
-    )
+    return rl.LOCATIONS.map(location => {
+      const [cx, cy] = locationToCircleCentre(location)
+      const props = {
+        key: `hole-${location.key}`,
+        cx,
+        cy,
+        r: HOLE_RADIUS,
+        className: `board-hole ${holeHighlight === location ? 'board-hole--highlight' : ''}`,
+        onClick: onSelectHole(location)
+      }
+      return <circle {...props} />
+    })
   }
 
   const renderMarbles = () => {
-    const occupiedEntries = previousEntries.filter(([, isOccupied]) => isOccupied)
-    const occupiedLocations = occupiedEntries.map(([location]) => location)
-    if (action) {
-      U.moveToLast(occupiedLocations, location => location.sameAs(action.fromLocation))
-    }
-    return occupiedLocations.map(location => {
-      const cx = GRID_X * (location.col + 1)
-      const cy = GRID_Y * (location.row + 1)
-      const angle = randomRotations.get(location.key)
-      const props = {
-        key: location.key,
-        cx,
-        cy,
-        r: MARBLE_RADIUS,
-        className: 'board-marble',
-        onClick: () => {
-          console.log(`[marble click] location: ${location.key}`)
-          if (marbleHighlight === location) {
-            setMarbleHighlight(null)
-          } else {
-            const fromLocation = action && location.sameAs(action.fromLocation) ? action.toLocation : location
-            const toLocation = holeHighlight
-            const validActionIndices = validateFromToSelections({ fromLocation, toLocation })
-            console.log(`validActionIndices: ${JSON.stringify(validActionIndices)}`)
-            if (validActionIndices.length) {
-              setMarbleHighlight(fromLocation)
-              if (validActionIndices.length === 1 && toLocation) {
-                manualStep(validActionIndices[0])
-              }
-            }
-          }
-        }
+    const occupiedEntries = entries.filter(([, isOccupied]) => isOccupied)
+    return occupiedEntries.map(([location]) => {
+      if (action && location.sameAs(action.toLocation)) {
+        return renderFromToMarble(action.fromLocation, action.toLocation)
       }
-      const style = {
-        transform: makeTransformStyle(angle),
-        transformOrigin: makeTransformOriginStyle(cx, cy)
+      else {
+        return renderStaticMarble(location)
       }
-
-      // Animate the piece that is being removed from the board
-      if (action && location.sameAs(action.viaLocation)) {
-        return (
-          <Spring
-            key={location.key}
-            config={{ duration: 300, delay: 300 }}
-            from={{ opacity: 1 }}
-            to={{ opacity: 0 }}
-          >
-            {springProps => <circle {...props} style={{ ...style, ...springProps, pointerEvents: 'none' }} />}
-          </Spring>
-        )
-      }
-
-      // Animate the piece that is being moved
-      if (action && location.sameAs(action.fromLocation)) {
-        const cxTo = GRID_X * (action.toLocation.col + 1)
-        const cyTo = GRID_Y * (action.toLocation.row + 1)
-        const angleTo = randomRotations.get(action.toLocation.key)
-        return (
-          <Spring
-            key={location.key}
-            config={{ duration: 600 }}
-            from={{
-              cx,
-              cy,
-              transform: makeTransformStyle(angle),
-              transformOrigin: makeTransformOriginStyle(cx, cy)
-            }}
-            to={{
-              cx: cxTo,
-              cy: cyTo,
-              transform: makeTransformStyle(angleTo),
-              transformOrigin: makeTransformOriginStyle(cxTo, cyTo)
-            }}
-          >
-            {springProps => <circle {...props} style={{ ...style, ...springProps }} />}
-          </Spring>
-        )
-      }
-
-      // Draw a regular piece
-      return <circle {...props} style={style} />
     })
+  }
+
+  const renderStaticMarble = location => {
+    const [cx, cy] = locationToCircleCentre(location)
+    const angle = randomRotations.get(location.key)
+    const props = {
+      key: location.key,
+      cx,
+      cy,
+      r: MARBLE_RADIUS,
+      className: 'board-marble',
+      onClick: onSelectMarble(location)
+    }
+    const style = {
+      transform: makeTransformStyle(angle),
+      transformOrigin: makeTransformOriginStyle(cx, cy)
+    }
+    return <circle {...props} style={style} />
+  }
+
+  const renderViaMarble = () => {
+    if (!action) return null
+    if (!showViaMarble) return null
+    const viaLocation = action.viaLocation
+    const [cx, cy] = locationToCircleCentre(viaLocation)
+    const angle = randomRotations.get(viaLocation.key)
+    const props = {
+      cx,
+      cy,
+      r: MARBLE_RADIUS,
+      className: 'board-marble'
+    }
+    const style = {
+      transform: makeTransformStyle(angle),
+      transformOrigin: makeTransformOriginStyle(cx, cy)
+    }
+    return (
+      <Spring
+        key={viaLocation.key}
+        config={{ duration: 300, delay: 300 }}
+        from={{ opacity: 1 }}
+        to={{ opacity: 0.25 }}
+        onRest={() => setShowViaMarble(false)}
+      >
+        {springProps => <circle {...props} style={{ ...style, ...springProps }} />}
+      </Spring>
+    )
+  }
+
+  const renderFromToMarble = (fromLocation, toLocation) => {
+    const [cxFrom, cyFrom] = locationToCircleCentre(fromLocation)
+    const [cxTo, cyTo] = locationToCircleCentre(toLocation)
+    const angleFrom = randomRotations.get(fromLocation.key)
+    const angleTo = randomRotations.get(toLocation.key)
+    const props = {
+      cx: cxFrom,
+      cy: cyFrom,
+      r: MARBLE_RADIUS,
+      className: 'board-marble',
+      onClick: onSelectMarble(toLocation)
+    }
+    return (
+      <Spring
+        key={action.toLocation.key}
+        config={{ duration: 600 }}
+        from={{
+          cx: cxFrom,
+          cy: cyFrom,
+          transform: makeTransformStyle(angleFrom),
+          transformOrigin: makeTransformOriginStyle(cxFrom, cyFrom)
+        }}
+        to={{
+          cx: cxTo,
+          cy: cyTo,
+          transform: makeTransformStyle(angleTo),
+          transformOrigin: makeTransformOriginStyle(cxTo, cyTo)
+        }}
+      >
+        {springProps => <circle {...props} style={springProps} />}
+      </Spring>
+    )
+  }
+
+  const renderMarbleHighlight = () => {
+    if (!marbleHighlight) return null
+    const [cx, cy] = locationToCircleCentre(marbleHighlight)
+    const props = {
+      cx,
+      cy,
+      r: MARBLE_HIGHLIGHT_RADIUS,
+      className: 'board-marble-highlight'
+    }
+    return <circle {...props} />
   }
 
   return (
@@ -170,15 +214,9 @@ const Board = ({
         </defs>
         <rect className="board-background"></rect>
         {renderHoles()}
+        {renderViaMarble()}
         {renderMarbles()}
-        {marbleHighlight && (
-          <circle
-            cx={GRID_X * (marbleHighlight.col + 1)}
-            cy={GRID_Y * (marbleHighlight.row + 1)}
-            r={MARBLE_HIGHLIGHT_RADIUS}
-            className="board-marble-highlight"
-          />
-        )}
+        {renderMarbleHighlight()}
       </svg>
     </div>
   )
@@ -186,10 +224,10 @@ const Board = ({
 
 Board.propTypes = {
   resetBoard: PropTypes.bool.isRequired,
-  previousEntries: PropTypes.array.isRequired,
+  entries: PropTypes.array.isRequired,
   action: PropTypes.object,
-  validateFromToSelections: PropTypes.func,
-  manualStep: PropTypes.func
+  validateManualMove: PropTypes.func,
+  makeManualMove: PropTypes.func
 }
 
 export default Board
