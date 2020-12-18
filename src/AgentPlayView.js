@@ -100,6 +100,7 @@ const AgentPlayView = () => {
         resetBoard={resetBoard}
         entries={entries}
         action={action}
+        interactive={false}
       />
 
       <div className="board-controls-below">

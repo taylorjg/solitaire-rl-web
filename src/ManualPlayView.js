@@ -48,6 +48,7 @@ const ManualPlayView = () => {
         resetBoard={resetBoard}
         entries={entries}
         action={action}
+        interactive={true}
         validateManualMove={validateManualMove}
         makeManualMove={makeManualMove}
       />

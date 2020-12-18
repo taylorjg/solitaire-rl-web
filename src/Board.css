@@ -15,9 +15,13 @@
   fill: brown;
 }
 
-.board-hole--highlight {
+.board-hole--available {
   stroke: magenta;
   stroke-width: 1;
+}
+
+.board-hole--selected {
+  fill: magenta;
 }
 
 .board-marble {

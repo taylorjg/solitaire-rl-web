@@ -22,13 +22,15 @@ const Board = ({
   resetBoard,
   entries,
   action,
+  interactive,
   validateManualMove,
   makeManualMove
 }) => {
   const [randomRotations, setRandomRotations] = useState(() => makeRandomRotationsMap())
   const [showViaMarble, setShowViaMarble] = useState(false)
-  const [marbleHighlight, setMarbleHighlight] = useState(null)
-  const [holeHighlight, setHoleHighlight] = useState(null)
+  const [selectedMarble, setSelectedMarble] = useState(null)
+  const [selectedHole, setSelectedHole] = useState(null)
+  const [availableHoles, setAvailableHoles] = useState([])
 
   useEffect(() => {
     if (resetBoard) {
@@ -38,40 +40,46 @@ const Board = ({
 
   useEffect(() => {
     setShowViaMarble(Boolean(action))
-    setMarbleHighlight(null)
-    setHoleHighlight(null)
+    setSelectedMarble(null)
+    setSelectedHole(null)
+    setAvailableHoles([])
   }, [action])
 
   const onSelectHole = location => () => {
-    if (holeHighlight === location) {
-      setHoleHighlight(null)
-    } else {
-      const fromLocation = marbleHighlight
+    if (!interactive) return
+    if (availableHoles.find(availableHole => availableHole.sameAs(location))) {
+      const fromLocation = selectedMarble
       const toLocation = location
       const validActionIndices = validateManualMove({ fromLocation, toLocation })
-      console.log(`validActionIndices: ${JSON.stringify(validActionIndices)}`)
-      if (validActionIndices.length) {
-        setHoleHighlight(location)
-        if (validActionIndices.length === 1 && fromLocation) {
-          makeManualMove(validActionIndices[0])
-        }
+      if (validActionIndices.length === 1) {
+        makeManualMove(validActionIndices[0])
       }
     }
   }
 
+  const onMouseOverHole = location => () => {
+    if (!interactive) return
+    if (availableHoles.find(availableHole => availableHole.sameAs(location))) {
+      setSelectedHole(location)
+    }
+  }
+
+  const onMouseOutHole = () => {
+    if (!interactive) return
+    setSelectedHole(null)
+  }
+
   const onSelectMarble = location => () => {
-    if (marbleHighlight === location) {
-      setMarbleHighlight(null)
+    if (!interactive) return
+    if (selectedMarble && selectedMarble.sameAs(location)) {
+      setSelectedMarble(null)
+      setAvailableHoles([])
     } else {
       const fromLocation = location
-      const toLocation = holeHighlight
-      const validActionIndices = validateManualMove({ fromLocation, toLocation })
-      console.log(`validActionIndices: ${JSON.stringify(validActionIndices)}`)
+      const validActionIndices = validateManualMove({ fromLocation })
       if (validActionIndices.length) {
-        setMarbleHighlight(fromLocation)
-        if (validActionIndices.length === 1 && toLocation) {
-          makeManualMove(validActionIndices[0])
-        }
+        setSelectedMarble(location)
+        setAvailableHoles(validActionIndices.map(validActionIndex => rl.ACTIONS[validActionIndex].toLocation))
       }
     }
   }
@@ -84,13 +92,22 @@ const Board = ({
   const renderHoles = () => {
     return rl.LOCATIONS.map(location => {
       const [cx, cy] = locationToCircleCentre(location)
+      const classNames = ['board-hole']
+      if (availableHoles.find(availableHole => availableHole.sameAs(location))) {
+        classNames.push('board-hole--available')
+      }
+      if (selectedHole && selectedHole.sameAs(location)) {
+        classNames.push('board-hole--selected')
+      }
       const props = {
         key: `hole-${location.key}`,
         cx,
         cy,
         r: HOLE_RADIUS,
-        className: `board-hole ${holeHighlight === location ? 'board-hole--highlight' : ''}`,
-        onClick: onSelectHole(location)
+        className: classNames.join(' '),
+        onClick: onSelectHole(location),
+        onMouseOver: onMouseOverHole(location),
+        onMouseOut: onMouseOutHole
       }
       return <circle {...props} />
     })
@@ -190,8 +207,8 @@ const Board = ({
   }
 
   const renderMarbleHighlight = () => {
-    if (!marbleHighlight) return null
-    const [cx, cy] = locationToCircleCentre(marbleHighlight)
+    if (!selectedMarble) return null
+    const [cx, cy] = locationToCircleCentre(selectedMarble)
     const props = {
       cx,
       cy,
@@ -226,6 +243,7 @@ Board.propTypes = {
   resetBoard: PropTypes.bool.isRequired,
   entries: PropTypes.array.isRequired,
   action: PropTypes.object,
+  interactive: PropTypes.bool,
   validateManualMove: PropTypes.func,
   makeManualMove: PropTypes.func
 }
