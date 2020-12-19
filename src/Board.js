@@ -22,6 +22,7 @@ const Board = ({
   resetBoard,
   entries,
   action,
+  undo,
   interactive,
   validateManualMove,
   makeManualMove
@@ -43,7 +44,7 @@ const Board = ({
     setSelectedMarble(null)
     setSelectedHole(null)
     setAvailableHoles([])
-  }, [action])
+  }, [action, undo])
 
   const onSelectHole = location => () => {
     if (!interactive) return
@@ -116,12 +117,17 @@ const Board = ({
   const renderMarbles = () => {
     const occupiedEntries = entries.filter(([, isOccupied]) => isOccupied)
     return occupiedEntries.map(([location]) => {
-      if (action && location.sameAs(action.toLocation)) {
-        return renderFromToMarble(action.fromLocation, action.toLocation)
+      if (action) {
+        const startLocation = undo ? action.toLocation : action.fromLocation
+        const endLocation = undo ? action.fromLocation : action.toLocation
+        if (location.sameAs(endLocation)) {
+          return renderFromToMarble(startLocation, endLocation)
+        }
+        if (undo && location.sameAs(action.viaLocation)) {
+          return null
+        }
       }
-      else {
-        return renderStaticMarble(location)
-      }
+      return renderStaticMarble(location)
     })
   }
 
@@ -145,7 +151,7 @@ const Board = ({
 
   const renderViaMarble = () => {
     if (!action) return null
-    if (!showViaMarble) return null
+    if (!undo && !showViaMarble) return null
     const viaLocation = action.viaLocation
     const [cx, cy] = locationToCircleCentre(viaLocation)
     const angle = randomRotations.get(viaLocation.key)
@@ -163,8 +169,8 @@ const Board = ({
       <Spring
         key={viaLocation.key}
         config={{ duration: 300, delay: 300 }}
-        from={{ opacity: 1 }}
-        to={{ opacity: 0.25 }}
+        from={{ opacity: undo ? 0.25 : 1 }}
+        to={{ opacity: undo ? 1 : 0.25 }}
         onRest={() => setShowViaMarble(false)}
       >
         {springProps => <circle {...props} style={{ ...style, ...springProps }} />}
@@ -172,21 +178,21 @@ const Board = ({
     )
   }
 
-  const renderFromToMarble = (fromLocation, toLocation) => {
-    const [cxFrom, cyFrom] = locationToCircleCentre(fromLocation)
-    const [cxTo, cyTo] = locationToCircleCentre(toLocation)
-    const angleFrom = randomRotations.get(fromLocation.key)
-    const angleTo = randomRotations.get(toLocation.key)
+  const renderFromToMarble = (startLocation, endLocation) => {
+    const [cxFrom, cyFrom] = locationToCircleCentre(startLocation)
+    const [cxTo, cyTo] = locationToCircleCentre(endLocation)
+    const angleFrom = randomRotations.get(startLocation.key)
+    const angleTo = randomRotations.get(endLocation.key)
     const props = {
       cx: cxFrom,
       cy: cyFrom,
       r: MARBLE_RADIUS,
       className: 'board-marble',
-      onClick: onSelectMarble(toLocation)
+      onClick: onSelectMarble(endLocation)
     }
     return (
       <Spring
-        key={action.toLocation.key}
+        key={endLocation.key}
         config={{ duration: 600 }}
         from={{
           cx: cxFrom,
@@ -243,6 +249,7 @@ Board.propTypes = {
   resetBoard: PropTypes.bool.isRequired,
   entries: PropTypes.array.isRequired,
   action: PropTypes.object,
+  undo: PropTypes.bool,
   interactive: PropTypes.bool,
   validateManualMove: PropTypes.func,
   makeManualMove: PropTypes.func

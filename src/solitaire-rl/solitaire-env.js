@@ -124,6 +124,16 @@ class Board {
     return new Board(newBoardState)
   }
 
+  undoMove(actionIndex) {
+    const action = ACTIONS[actionIndex]
+    const { fromLocation, viaLocation, toLocation } = action
+    const newBoardState = new Map(this._boardState)
+    newBoardState.set(fromLocation.key, true)
+    newBoardState.set(viaLocation.key, true)
+    newBoardState.set(toLocation.key, false)
+    return new Board(newBoardState)
+  }
+
   location = location => this._boardState.get(location.key)
 
   entries() {
@@ -167,6 +177,12 @@ export class SolitaireEnv {
     const done = this._board.done
     const reward = done ? this._calculateFinalReward() : 0
     return [obs, reward, done, EMPTY_INFO]
+  }
+
+  undo = actionIndex => {
+    this._board = this._board.undoMove(actionIndex)
+    const obs = boardToObservation(this._board)
+    return obs
   }
 
   validActions() {

@@ -34,4 +34,18 @@ describe('SolitaireEnv', () => {
     expect(reward).toEqual(100)
     expect(done).toEqual(true)
   })
+
+  it('should be back to undo from solved all the way back to the beginning', () => {
+    const env = new SolitaireEnv()
+    env.reset()
+    let obs
+    for (const action of solutionActions) {
+      [obs] = env.step(action)
+    }
+    expect(obs).toEqual(Array(33).fill(0).fill(1, 16, 17))
+    for (const action of solutionActions.slice().reverse()) {
+      obs = env.undo(action)
+    }
+    expect(obs).toEqual(Array(33).fill(1).fill(0, 16, 17))
+  })
 })

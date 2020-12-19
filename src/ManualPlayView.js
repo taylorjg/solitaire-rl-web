@@ -9,12 +9,16 @@ const ManualPlayView = () => {
   const [resetBoard, setResetBoard] = useState(true)
   const [entries, setEntries] = useState([])
   const [action, setAction] = useState(null)
+  const [undo, setUndo] = useState(false)
+  const [actions, setActions] = useState([])
 
   useEffect(() => {
     env.reset()
     setResetBoard(true)
     setEntries(env.entries())
     setAction(null)
+    setUndo(false)
+    setActions([])
   }, [env])
 
   const onReset = () => {
@@ -22,6 +26,17 @@ const ManualPlayView = () => {
     setResetBoard(true)
     setEntries(env.entries())
     setAction(null)
+    setUndo(false)
+    setActions([])
+  }
+
+  const onUndo = () => {
+    const [actionIndex] = actions.slice(-1)
+    env.undo(actionIndex)
+    setEntries(env.entries())
+    setAction(rl.ACTIONS[actionIndex])
+    setUndo(true)
+    setActions(actions => actions.slice(0, -1))
   }
 
   const validateManualMove = ({ fromLocation, toLocation }) => {
@@ -35,11 +50,12 @@ const ManualPlayView = () => {
   }
 
   const makeManualMove = actionIndex => {
-    if (env.done) return
     env.step(actionIndex)
     setResetBoard(false)
     setEntries(env.entries())
     setAction(rl.ACTIONS[actionIndex])
+    setUndo(false)
+    setActions(actions => actions.concat(actionIndex))
   }
 
   return (
@@ -48,6 +64,7 @@ const ManualPlayView = () => {
         resetBoard={resetBoard}
         entries={entries}
         action={action}
+        undo={undo}
         interactive={true}
         validateManualMove={validateManualMove}
         makeManualMove={makeManualMove}
@@ -55,6 +72,7 @@ const ManualPlayView = () => {
 
       <div className="board-controls-below">
         <button type="button" onClick={onReset}>Reset</button>
+        <button type="button" onClick={onUndo} disabled={actions.length === 0}>Undo</button>
       </div>
     </div>
   )
