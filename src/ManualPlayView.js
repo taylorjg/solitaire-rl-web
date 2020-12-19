@@ -59,20 +59,22 @@ const ManualPlayView = () => {
   }
 
   return (
-    <div className="manual-play-content">
-      <Board
-        resetBoard={resetBoard}
-        entries={entries}
-        action={action}
-        undo={undo}
-        interactive={true}
-        validateManualMove={validateManualMove}
-        makeManualMove={makeManualMove}
-      />
+    <div className="agent-play-content">
+      <div className="board-wrapper">
+        <Board
+          resetBoard={resetBoard}
+          entries={entries}
+          action={action}
+          undo={undo}
+          interactive={true}
+          validateManualMove={validateManualMove}
+          makeManualMove={makeManualMove}
+        />
 
-      <div className="board-controls-below">
-        <button type="button" onClick={onReset}>Reset</button>
-        <button type="button" onClick={onUndo} disabled={actions.length === 0}>Undo</button>
+        <div className="board-controls-below">
+          <button type="button" onClick={onReset}>Reset</button>
+          <button type="button" onClick={onUndo} disabled={actions.length === 0}>Undo</button>
+        </div>
       </div>
     </div>
   )

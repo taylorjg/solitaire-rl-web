@@ -89,27 +89,31 @@ const AgentPlayView = () => {
 
   return (
     <div className="agent-play-content">
-      <div className="board-controls-above">
-        <select onChange={e => changeAgent(e.target.value)} disabled={running}>
-          <option value="randomAgent">Random Agent</option>
-          <option value="trainedAgent">Trained Agent</option>
-        </select>
-      </div>
+      <div className="board-wrapper">
 
-      <Board
-        resetBoard={resetBoard}
-        entries={entries}
-        action={action}
-        interactive={false}
-      />
+        <div className="board-controls-above">
+          <select onChange={e => changeAgent(e.target.value)} disabled={running}>
+            <option value="randomAgent">Random Agent</option>
+            <option value="trainedAgent">Trained Agent</option>
+          </select>
+        </div>
 
-      <div className="board-controls-below">
-        <button type="button" disabled={agent === null || agent.done || running} onClick={onStep}>Step</button>
-        {running
-          ? <button type="button" onClick={onStop}>Stop</button>
-          : <button type="button" disabled={agent === null || agent.done} onClick={onRun}>Run</button>
-        }
-        <button type="button" disabled={agent === null || running} onClick={onReset}>Reset</button>
+        <Board
+          resetBoard={resetBoard}
+          entries={entries}
+          action={action}
+          interactive={false}
+        />
+
+        <div className="board-controls-below">
+          <button type="button" disabled={agent === null || agent.done || running} onClick={onStep}>Step</button>
+          {running
+            ? <button type="button" onClick={onStop}>Stop</button>
+            : <button type="button" disabled={agent === null || agent.done} onClick={onRun}>Run</button>
+          }
+          <button type="button" disabled={agent === null || running} onClick={onReset}>Reset</button>
+        </div>
+
       </div>
     </div>
   )

@@ -1,17 +1,26 @@
 .manual-play-content {
-  width: 100vw;
-  height: 100vh;
-  position: fixed;
-  top: 0;
-  left: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  z-index: -1;
+  align-items: center;
+}
+
+.board-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.board-wrapper svg {
+  display: block;
 }
 
 .board-controls-below {
+  position: absolute;
+  width: 100%;
+  top: 100%;
   display: flex;
   justify-content: center;
 }
