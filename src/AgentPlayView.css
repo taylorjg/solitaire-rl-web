@@ -37,3 +37,8 @@
 .board-controls-below * {
   margin: 0 .25rem;
 }
+
+.alert-wrapper {
+  position: fixed;
+  bottom: .5rem;
+}

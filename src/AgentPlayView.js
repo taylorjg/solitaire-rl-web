@@ -1,29 +1,35 @@
 import { useEffect, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
+import Alert from 'react-bootstrap/Alert'
 import Board from './Board'
 import * as rl from './solitaire-rl'
 import './AgentPlayView.css'
 
 const modelPath = '/models/model.json'
 
+const useQuery = () => new URLSearchParams(useLocation().search)
+
 const AgentPlayView = () => {
 
+  const query = useQuery()
+  const [selectedAgent, setSelectedAgent] = useState(() => query.get('agent'))
   const [agent, setAgent] = useState(null)
   const [resetBoard, setResetBoard] = useState(true)
   const [entries, setEntries] = useState(agent?.entries() ?? [])
   const [action, setAction] = useState(null)
   const [running, setRunning] = useState(false)
+  const [fetchingModel, setFetchingModel] = useState(false)
+  const [errorMessage, setErrorMessage] = useState(null)
 
   useEffect(() => {
     if (agent) {
       agent.reset()
-      setResetBoard(true)
       setEntries(agent.entries())
-      setAction(null)
     } else {
-      setResetBoard(true)
       setEntries([])
-      setAction(null)
     }
+    setResetBoard(true)
+    setAction(null)
   }, [agent])
 
   const runInterval = useRef(null)
@@ -33,7 +39,7 @@ const AgentPlayView = () => {
     return () => clearInterval(runInterval.current)
   }, [])
 
-  useEffect(() => changeAgent('randomAgent'), [])
+  useEffect(() => makeAgent(selectedAgent), [selectedAgent])
 
   const onStep = () => {
     const stepResult = agent.step()
@@ -71,14 +77,25 @@ const AgentPlayView = () => {
     }
   }
 
-  const changeAgent = async agentName => {
+  const makeAgent = async agentName => {
     switch (agentName) {
-      case 'trainedAgent': {
-        const agent = await rl.makeTrainedAgent(modelPath)
-        setAgent(agent)
+
+      case 'trained': {
+        setFetchingModel(true)
+        try {
+          setErrorMessage(null)
+          const agent = await rl.makeTrainedAgent(modelPath)
+          setAgent(agent)
+        } catch (error) {
+          setErrorMessage(error.message)
+          setSelectedAgent('random')
+        } finally {
+          setFetchingModel(false)
+        }
         break
       }
-      case 'randomAgent':
+
+      case 'random':
       default: {
         const agent = rl.makeRandomAgent()
         setAgent(agent)
@@ -87,14 +104,18 @@ const AgentPlayView = () => {
     }
   }
 
+  const onChangeSelectedAgent = e => {
+    setSelectedAgent(e.target.value)
+  }
+
   return (
     <div className="agent-play-content">
       <div className="board-wrapper">
 
         <div className="board-controls-above">
-          <select onChange={e => changeAgent(e.target.value)} disabled={running}>
-            <option value="randomAgent">Random Agent</option>
-            <option value="trainedAgent">Trained Agent</option>
+          <select value={selectedAgent} onChange={onChangeSelectedAgent} disabled={running || fetchingModel}>
+            <option value="random">Random Agent</option>
+            <option value="trained">Trained Agent</option>
           </select>
         </div>
 
@@ -115,6 +136,16 @@ const AgentPlayView = () => {
         </div>
 
       </div>
+
+      {
+        errorMessage && (
+          <div className="alert-wrapper">
+            <Alert variant="danger" dismissible onClose={() => setErrorMessage(null)}>
+              {errorMessage}
+            </Alert>
+          </div>
+        )
+      }
     </div>
   )
 }
