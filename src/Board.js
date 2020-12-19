@@ -169,8 +169,8 @@ const Board = ({
       <Spring
         key={viaLocation.key}
         config={{ duration: 300, delay: 300 }}
-        from={{ opacity: undo ? 0.25 : 1 }}
-        to={{ opacity: undo ? 1 : 0.25 }}
+        from={{ opacity: undo ? 0 : 1 }}
+        to={{ opacity: undo ? 1 : 0 }}
         onRest={() => setShowViaMarble(false)}
       >
         {springProps => <circle {...props} style={{ ...style, ...springProps }} />}
