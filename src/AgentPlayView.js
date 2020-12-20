@@ -12,7 +12,7 @@ const useQuery = () => new URLSearchParams(useLocation().search)
 const AgentPlayView = () => {
 
   const query = useQuery()
-  const [selectedAgent, setSelectedAgent] = useState(() => query.get('agent'))
+  const [selectedAgent, setSelectedAgent] = useState(() => query.get('agent') || 'random')
   const [agent, setAgent] = useState(null)
   const [resetBoard, setResetBoard] = useState(true)
   const [entries, setEntries] = useState(agent?.entries() ?? [])
