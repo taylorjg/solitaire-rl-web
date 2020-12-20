@@ -35,10 +35,10 @@ const evaluateValidActions = (model, state) => {
     }
     const validActions = currentBoard.validActions()
     const nextStates = validActions.map(evaluateValidAction)
-    const predictStart = performance.now()
+    // const predictStart = performance.now()
     const nextStateValues = model.predict(tf.tensor(nextStates))
-    const predictEnd = performance.now()
-    console.log(`predictElapsed: ${(predictEnd - predictStart).toFixed(2)}; nextStates.length: ${nextStates.length}`)
+    // const predictEnd = performance.now()
+    // console.log(`predictElapsed: ${(predictEnd - predictStart).toFixed(2)}; nextStates.length: ${nextStates.length}`)
     return U.zip(nextStateValues.dataSync(), validActions)
   })
 }
@@ -63,7 +63,7 @@ const makePolicy = model => {
   }
 }
 
-const trainLoop = async (env, model, pi, saveFn, progressFn) => {
+const trainLoop = async (env, model, pi, saveFn, progressFn, cancelledRef) => {
   const optimizer = tf.train.adam(LR)
   const lossFn = tf.losses.meanSquaredError
   const finalRewards = []
@@ -79,7 +79,7 @@ const trainLoop = async (env, model, pi, saveFn, progressFn) => {
       const [nextState, reward, done] = env.step(action)
       const stateValueTarget = reward + (1 - done) * GAMMA * nextStateValue
       const stateTensor = tf.tensor([state])
-      const optStart = performance.now()
+      // const optStart = performance.now()
       optimizer.minimize(() => {
         const stateValue = model.apply(stateTensor)
         const targetTensor = tf.tensor([[stateValueTarget]])
@@ -88,8 +88,8 @@ const trainLoop = async (env, model, pi, saveFn, progressFn) => {
         return loss
       })
       tf.dispose(stateTensor)
-      const optEnd = performance.now()
-      console.log(`optElapsed: ${(optEnd - optStart).toFixed(2)}`)
+      // const optEnd = performance.now()
+      // console.log(`optElapsed: ${(optEnd - optStart).toFixed(2)}`)
 
       if (done) {
         // console.log(JSON.stringify(tf.memory()))
@@ -122,6 +122,9 @@ const trainLoop = async (env, model, pi, saveFn, progressFn) => {
         }
 
         await tf.nextFrame()
+        if (cancelledRef.current) {
+          return
+        }
         break
       }
 
@@ -198,9 +201,9 @@ export const makeTrainedAgent = async modelPath => {
   return new TrainedAgent(model)
 }
 
-export const train = async (saveFn, progressFn) => {
+export const train = async (saveFn, progressFn, cancelledRef) => {
   const env = new SolitaireEnv()
   const model = makeModel()
   const pi = makePolicy(model)
-  await trainLoop(env, model, pi, saveFn, progressFn)
+  await trainLoop(env, model, pi, saveFn, progressFn, cancelledRef)
 }

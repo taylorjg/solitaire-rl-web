@@ -20,22 +20,20 @@
   font-style: italic;
 }
 
-.train-timer {
-  font-family: 'Courier New', Courier, monospace;
-}
-
 .train-controls {
   display: flex;
   justify-content: space-between;
   width: 100%;
 }
 
-.train-messages {
-  box-sizing: border-box;
-  background-color: black;
-  color: white;
+.train-timer {
   font-family: 'Courier New', Courier, monospace;
-  font-size: small;
-  padding: .5rem;
-  width: 100%;
+}
+
+.train-stats-label {
+  font-weight: bold;
+}
+
+.train-stats-value {
+  font-family: 'Courier New', Courier, monospace;
 }
