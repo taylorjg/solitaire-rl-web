@@ -67,7 +67,6 @@ const trainLoop = async (env, model, pi, saveFn, progressFn, cancelledRef) => {
   const optimizer = tf.train.adam(LR)
   const lossFn = tf.losses.meanSquaredError
   const finalRewards = []
-  const finalRewardsMA = []
   let bestFinalReward = Number.NEGATIVE_INFINITY
   let bestFinalRewardMA = Number.NEGATIVE_INFINITY
   const epsilonDecaySchedule = makeLinearDecaySchedule(EPSILON_START, EPSILON_END, EPSILON_DECAY_PC)
@@ -99,10 +98,9 @@ const trainLoop = async (env, model, pi, saveFn, progressFn, cancelledRef) => {
           bestFinalReward = finalReward
         }
         let finalRewardMA = Number.NEGATIVE_INFINITY
-        if (finalRewards.length > 100) {
+        if (finalRewards.length >= 100) {
           const meanTensor = tf.mean(finalRewards.slice(-100))
           finalRewardMA = meanTensor.dataSync()[0]
-          finalRewardsMA.push(finalRewardMA)
           if (finalRewardMA > bestFinalRewardMA) {
             bestFinalRewardMA = finalRewardMA
           }

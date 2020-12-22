@@ -1,10 +1,11 @@
 {
   "name": "solitaire-rl-web",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "Solve Solitaire using reinforcement learning",
   "private": true,
   "dependencies": {
     "@tensorflow/tfjs": "^2.7.0",
+    "@tensorflow/tfjs-vis": "^1.4.3",
     "@testing-library/jest-dom": "^5.11.6",
     "@testing-library/react": "^11.2.2",
     "@testing-library/user-event": "^12.5.0",

@@ -26,6 +26,10 @@
   width: 100%;
 }
 
+.train-controls-left * {
+  margin: 0 .25rem;
+}
+
 .train-timer {
   font-family: 'Courier New', Courier, monospace;
 }
@@ -36,4 +40,11 @@
 
 .train-stats-value {
   font-family: 'Courier New', Courier, monospace;
+}
+
+.train-stats-chart {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
