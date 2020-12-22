@@ -30,7 +30,8 @@
   width: 100%;
   top: 100%;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
 }
 
 .board-controls-below * {

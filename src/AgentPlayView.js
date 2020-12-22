@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import Alert from 'react-bootstrap/Alert'
 import Board from './Board'
@@ -20,23 +20,13 @@ const AgentPlayView = () => {
   const [running, setRunning] = useState(false)
   const [fetchingModel, setFetchingModel] = useState(false)
   const [errorMessage, setErrorMessage] = useState(null)
+  const [finalReward, setFinalReward] = useState(null)
 
-  useEffect(() => {
-    if (agent) {
-      agent.reset()
-      setEntries(agent.entries())
-    } else {
-      setEntries([])
-    }
-    setResetBoard(true)
-    setAction(null)
-  }, [agent])
-
-  const runInterval = useRef(null)
+  const runTimerRef = useRef(null)
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    return () => clearInterval(runInterval.current)
+    return () => clearInterval(runTimerRef.current)
   }, [])
 
   useEffect(() => makeAgent(selectedAgent), [selectedAgent])
@@ -46,14 +36,17 @@ const AgentPlayView = () => {
     setResetBoard(false)
     setEntries(stepResult.entries)
     setAction(stepResult.action)
+    if (stepResult.done) {
+      setFinalReward(stepResult.reward)
+    }
   }
 
   const onRun = () => {
     setRunning(true)
     onStep()
-    runInterval.current = setInterval(() => {
+    runTimerRef.current = setInterval(() => {
       if (agent.done) {
-        clearInterval(runInterval.current)
+        clearInterval(runTimerRef.current)
         setRunning(false)
       } else {
         onStep()
@@ -62,20 +55,21 @@ const AgentPlayView = () => {
   }
 
   const onStop = () => {
-    clearInterval(runInterval.current)
+    clearInterval(runTimerRef.current)
     setRunning(false)
   }
 
-  const onReset = () => {
-    if (resetBoard) {
-      setEntries(agent.entries())
-    } else {
+  const onReset = useCallback(() => {
+    if (agent) {
       agent.reset()
       setResetBoard(true)
       setEntries(agent.entries())
       setAction(null)
+      setFinalReward(null)
     }
-  }
+  }, [agent])
+
+  useEffect(onReset, [onReset])
 
   const makeAgent = async agentName => {
     switch (agentName) {
@@ -104,9 +98,8 @@ const AgentPlayView = () => {
     }
   }
 
-  const onChangeSelectedAgent = e => {
+  const onChangeSelectedAgent = e =>
     setSelectedAgent(e.target.value)
-  }
 
   return (
     <div className="agent-play-content">
@@ -127,12 +120,15 @@ const AgentPlayView = () => {
         />
 
         <div className="board-controls-below">
-          <button type="button" disabled={agent === null || agent.done || running} onClick={onStep}>Step</button>
-          {running
-            ? <button type="button" onClick={onStop}>Stop</button>
-            : <button type="button" disabled={agent === null || agent.done} onClick={onRun}>Run</button>
-          }
-          <button type="button" disabled={agent === null || running} onClick={onReset}>Reset</button>
+          <div>
+            <button type="button" disabled={agent === null || agent.done || running} onClick={onStep}>Step</button>
+            {running
+              ? <button type="button" onClick={onStop}>Stop</button>
+              : <button type="button" disabled={agent === null || agent.done} onClick={onRun}>Run</button>
+            }
+            <button type="button" disabled={agent === null || running} onClick={onReset}>Reset</button>
+          </div>
+          {finalReward !== null && <div>Final Reward: {finalReward}</div>}
         </div>
 
       </div>
