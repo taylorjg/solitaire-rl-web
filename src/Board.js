@@ -151,15 +151,20 @@ const Board = ({
 
   const renderViaMarble = () => {
     if (!action) return null
+    // TODO: introduce hideMarble/setHideMarble state ?
     if (!undo && !showViaMarble) return null
     const viaLocation = action.viaLocation
     const [cx, cy] = locationToCircleCentre(viaLocation)
     const angle = randomRotations.get(viaLocation.key)
+    const maybeOnClick = undo
+      ? { onClick: onSelectMarble(viaLocation) }
+      : undefined
     const props = {
       cx,
       cy,
       r: MARBLE_RADIUS,
-      className: 'board-marble'
+      className: 'board-marble',
+      ...maybeOnClick
     }
     const style = {
       transform: makeTransformStyle(angle),
