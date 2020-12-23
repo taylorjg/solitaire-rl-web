@@ -2,6 +2,20 @@
 
 _TODO_
 
+# Screenshots
+
+## Manual Play
+
+![manual-play](screenshots/manual-play-smaller.png)
+
+## Agent Play
+
+![agent-play](screenshots/agent-play-smaller.png)
+
+## Successful Training Run
+
+![successful-training-run](screenshots/successful-training-run-smaller.png)
+
 # TODO
 
 * Redraw board on window size change
