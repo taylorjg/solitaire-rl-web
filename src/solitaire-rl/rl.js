@@ -80,9 +80,9 @@ const trainLoop = async (env, model, pi, saveFn, progressFn, cancelledRef) => {
       const stateTensor = tf.tensor([state])
       // const optStart = performance.now()
       optimizer.minimize(() => {
-        const stateValue = model.apply(stateTensor)
-        const targetTensor = tf.tensor([[stateValueTarget]])
-        const loss = lossFn(stateValue, targetTensor)
+        const stateValueTensor = model.apply(stateTensor).squeeze(-1)
+        const targetTensor = tf.tensor([stateValueTarget])
+        const loss = lossFn(stateValueTensor, targetTensor)
         tf.dispose(targetTensor)
         return loss
       })

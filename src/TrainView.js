@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Table from 'react-bootstrap/Table'
 import * as tfvis from '@tensorflow/tfjs-vis'
 import * as rl from './solitaire-rl'
-import * as U from './solitaire-rl/utils'
 import './TrainView.css'
 
 const TrainView = () => {
@@ -142,9 +141,7 @@ const TrainView = () => {
             }
           </div>
           <div className="train-controls-right">
-            {training && (
-              <div className="train-timer">{timerData.elapsedFormatted}</div>
-            )}
+            {stats && <div className="train-timer">{timerData.elapsedFormatted}</div>}
           </div>
         </div>
         {stats && (
@@ -152,27 +149,27 @@ const TrainView = () => {
             <tbody>
               <tr>
                 <td className="train-stats-label">Episode</td>
-                <td className="train-stats-value">{U.padInt(stats.episode, 5)}</td>
+                <td className="train-stats-value">{stats.episode}</td>
               </tr>
               <tr>
                 <td className="train-stats-label">Epsilon</td>
-                <td className="train-stats-value">{U.padReal(stats.epsilon, 5)}</td>
+                <td className="train-stats-value">{stats.epsilon.toFixed(5)}</td>
               </tr>
               <tr>
                 <td className="train-stats-label">Last Final Reward</td>
-                <td className="train-stats-value">{U.padInt(stats.finalReward, 3)}</td>
+                <td className="train-stats-value">{stats.finalReward}</td>
               </tr>
               <tr>
                 <td className="train-stats-label">Best Final Reward</td>
-                <td className="train-stats-value">{U.padInt(stats.bestFinalReward, 3)}</td>
+                <td className="train-stats-value">{stats.bestFinalReward}</td>
               </tr>
               <tr>
                 <td className="train-stats-label">Last Final Reward (MA)</td>
-                <td className="train-stats-value">{U.padReal(stats.finalRewardMA, 3)}</td>
+                <td className="train-stats-value">{stats.finalRewardMA.toFixed(3)}</td>
               </tr>
               <tr>
                 <td className="train-stats-label">Best Final Reward (MA)</td>
-                <td className="train-stats-value">{U.padReal(stats.bestFinalRewardMA, 3)}</td>
+                <td className="train-stats-value">{stats.bestFinalRewardMA.toFixed(3)}</td>
               </tr>
             </tbody>
           </Table>
