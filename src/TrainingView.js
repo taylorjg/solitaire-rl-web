@@ -21,6 +21,10 @@ const TrainingView = () => {
   const chartDataBestRef = useRef([])
   const chartElementRef = useRef()
 
+  const prevTimeRef = useRef(0)
+  const episodeCount = useRef(0)
+  const epsRef = useRef(0)
+
   const formatElapsedTime = ms => {
     const s = ms / 1000
     const mm = Math.floor(s / 60).toString().padStart(2, '0')
@@ -48,6 +52,17 @@ const TrainingView = () => {
     })
   }, [])
 
+  const updateEps = useCallback(() => {
+    episodeCount.current++
+    const now = performance.now()
+    const delta = now - prevTimeRef.current
+    if (delta >= 1000) {
+      epsRef.current = episodeCount.current * 1000 / delta
+      prevTimeRef.current = now
+      episodeCount.current = 0
+    }
+  }, [])
+
   const onSave = _model => {
     // TODO: upload model to server...
   }
@@ -55,6 +70,7 @@ const TrainingView = () => {
   const onProgress = stats => {
     setStats(stats)
     updateTimer()
+    updateEps()
   }
 
   const showChart = useCallback(() => {
@@ -98,6 +114,9 @@ const TrainingView = () => {
       setChartVisible(false)
       setMovingAverageAvailable(false)
       resetTimer()
+      prevTimeRef.current = performance.now()
+      episodeCount.current = 0
+      epsRef.current = 0
       await rl.train(onSave, onProgress, cancelledRef)
       setChartVisible(true)
     } finally {
@@ -107,6 +126,7 @@ const TrainingView = () => {
 
   const onCancel = () => {
     cancelledRef.current = true
+    epsRef.current = 0
     setChartVisible(true)
   }
 
@@ -149,6 +169,10 @@ const TrainingView = () => {
               <tr>
                 <td className="training-stats-label">Episode</td>
                 <td className="training-stats-value">{stats.episode}</td>
+              </tr>
+              <tr>
+                <td className="training-stats-label">Episodes per second</td>
+                <td className="training-stats-value">{epsRef.current.toFixed(2)}</td>
               </tr>
               <tr>
                 <td className="training-stats-label">Epsilon</td>
