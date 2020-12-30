@@ -62,4 +62,8 @@ describe('utils', () => {
     U.moveToLast(xs, x => x === 99)
     expect(xs).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
   })
+
+  it('mean', () => {
+    expect(U.mean([1, 2, 3, 4, 5])).toEqual(3)
+  })
 })

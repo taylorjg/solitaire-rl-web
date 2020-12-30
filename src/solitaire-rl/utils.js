@@ -24,3 +24,9 @@ export const moveToLast = (xs, predicate) => {
     xs.splice(xs.length, 0, x)
   }
 }
+
+export const mean = xs => {
+  const count = xs.length
+  const sum = xs.reduce((acc, x) => acc + x, 0)
+  return sum / count
+}

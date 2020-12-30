@@ -122,8 +122,7 @@ const TrainView = () => {
     <div className="train-content">
       <div className="train-content-inner">
         <div className="train-warning">
-          NOTE: currently, training is very slow and doesn't always work!
-          I aim to make it quicker and more reliable.
+          NOTE: currently, training doesn't always work! I aim to make it more reliable.
           </div>
         <div className="train-controls">
           <div className="train-controls-left">

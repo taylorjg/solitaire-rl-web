@@ -2,16 +2,23 @@ import * as tf from '@tensorflow/tfjs'
 import { SolitaireEnv, observationToBoard, boardToObservation, ACTIONS } from './solitaire-env'
 import * as U from './utils'
 
-const LR = 0.001
+const tfConfigure = async () => {
+  await tf.ready()
+  await tf.setBackend('cpu')
+}
+
+tfConfigure()
+
+const LR = 0.0015
 const EPSILON_START = 1
 const EPSILON_END = 0.01
-const EPSILON_DECAY_PC = 50
+const EPSILON_DECAY_PC = 80
 const GAMMA = 1
-const MAX_EPISODES = 20000
+const MAX_EPISODES = 25000
 
 const makeModel = () => {
   const model = tf.sequential()
-  model.add(tf.layers.dense({ inputShape: [33], units: 20, activation: 'relu', name: 'input-layer' }))
+  model.add(tf.layers.dense({ inputShape: [33], units: 33, activation: 'relu', name: 'input-layer' }))
   model.add(tf.layers.dense({ units: 1, name: 'output-layer' }))
   return model
 }
@@ -76,19 +83,19 @@ const trainLoop = async (env, model, pi, saveFn, progressFn, cancelledRef) => {
     for (; ;) {
       const [nextStateValue, action] = pi(state, epsilon)
       const [nextState, reward, done] = env.step(action)
-      const stateValueTarget = reward + (1 - done) * GAMMA * nextStateValue
-      const stateTensor = tf.tensor([state])
+      const target = reward + (1 - done) * GAMMA * nextStateValue
+      const stateLocal = state
       // const optStart = performance.now()
-      optimizer.minimize(() => {
+      optimizer.minimize(() => tf.tidy(() => {
+        const stateTensor = tf.tensor(stateLocal).expandDims(0)
         const stateValueTensor = model.apply(stateTensor).squeeze(-1)
-        const targetTensor = tf.tensor([stateValueTarget])
+        const targetTensor = tf.tensor(target).expandDims(0)
         const loss = lossFn(stateValueTensor, targetTensor)
-        tf.dispose(targetTensor)
         return loss
-      })
-      tf.dispose(stateTensor)
+      }))
       // const optEnd = performance.now()
       // console.log(`optElapsed: ${(optEnd - optStart).toFixed(2)}`)
+      state = nextState
 
       if (done) {
         // console.log(JSON.stringify(tf.memory()))
@@ -99,21 +106,20 @@ const trainLoop = async (env, model, pi, saveFn, progressFn, cancelledRef) => {
         }
         let finalRewardMA = Number.NEGATIVE_INFINITY
         if (finalRewards.length >= 100) {
-          const meanTensor = tf.mean(finalRewards.slice(-100))
-          finalRewardMA = meanTensor.dataSync()[0]
+          finalRewardMA = U.mean(finalRewards.slice(-100))
           if (finalRewardMA > bestFinalRewardMA) {
             bestFinalRewardMA = finalRewardMA
           }
-          tf.dispose(meanTensor)
         }
-        progressFn({
-          episode,
+        const stats = {
+          episode: episode + 1,
           epsilon,
           finalReward,
           bestFinalReward,
           finalRewardMA,
           bestFinalRewardMA
-        })
+        }
+        progressFn(stats)
 
         if (finalRewardMA >= 50) {
           return saveFn(model)
@@ -125,8 +131,6 @@ const trainLoop = async (env, model, pi, saveFn, progressFn, cancelledRef) => {
         }
         break
       }
-
-      state = nextState
     }
   }
 }
