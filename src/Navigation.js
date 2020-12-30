@@ -13,7 +13,7 @@ const Navigation = () => {
           <NavLink to={ROUTES.agentPlayView} activeClassName="navigation-link--active">Agent Play</NavLink>
         </li>
         <li>
-          <NavLink to={ROUTES.trainView} activeClassName="navigation-link--active">Train</NavLink>
+          <NavLink to={ROUTES.trainingView} activeClassName="navigation-link--active">Training</NavLink>
         </li>
       </ul>
     </div>

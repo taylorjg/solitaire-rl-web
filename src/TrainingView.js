@@ -2,9 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Table from 'react-bootstrap/Table'
 import * as tfvis from '@tensorflow/tfjs-vis'
 import * as rl from './solitaire-rl'
-import './TrainView.css'
+import './TrainingView.css'
 
-const TrainView = () => {
+const TrainingView = () => {
 
   const [training, setTraining] = useState(false)
   const [stats, setStats] = useState(null)
@@ -119,13 +119,13 @@ const TrainView = () => {
   }
 
   return (
-    <div className="train-content">
-      <div className="train-content-inner">
-        <div className="train-warning">
+    <div className="training-content">
+      <div className="training-content-inner">
+        <div className="training-warning">
           NOTE: currently, training doesn't always work! I aim to make it more reliable.
           </div>
-        <div className="train-controls">
-          <div className="train-controls-left">
+        <div className="training-controls">
+          <div className="training-controls-left">
             {
               training
                 ? <button onClick={onCancel}>Cancel</button>
@@ -139,44 +139,44 @@ const TrainView = () => {
               )
             }
           </div>
-          <div className="train-controls-right">
-            {stats && <div className="train-timer">{timerData.elapsedFormatted}</div>}
+          <div className="training-controls-right">
+            {stats && <div className="training-timer">{timerData.elapsedFormatted}</div>}
           </div>
         </div>
         {stats && (
           <Table size="sm">
             <tbody>
               <tr>
-                <td className="train-stats-label">Episode</td>
-                <td className="train-stats-value">{stats.episode}</td>
+                <td className="training-stats-label">Episode</td>
+                <td className="training-stats-value">{stats.episode}</td>
               </tr>
               <tr>
-                <td className="train-stats-label">Epsilon</td>
-                <td className="train-stats-value">{stats.epsilon.toFixed(5)}</td>
+                <td className="training-stats-label">Epsilon</td>
+                <td className="training-stats-value">{stats.epsilon.toFixed(5)}</td>
               </tr>
               <tr>
-                <td className="train-stats-label">Last Final Reward</td>
-                <td className="train-stats-value">{stats.finalReward}</td>
+                <td className="training-stats-label">Last Final Reward</td>
+                <td className="training-stats-value">{stats.finalReward}</td>
               </tr>
               <tr>
-                <td className="train-stats-label">Best Final Reward</td>
-                <td className="train-stats-value">{stats.bestFinalReward}</td>
+                <td className="training-stats-label">Best Final Reward</td>
+                <td className="training-stats-value">{stats.bestFinalReward}</td>
               </tr>
               <tr>
-                <td className="train-stats-label">Last Final Reward (MA)</td>
-                <td className="train-stats-value">{stats.finalRewardMA.toFixed(3)}</td>
+                <td className="training-stats-label">Last Final Reward (MA)</td>
+                <td className="training-stats-value">{stats.finalRewardMA.toFixed(3)}</td>
               </tr>
               <tr>
-                <td className="train-stats-label">Best Final Reward (MA)</td>
-                <td className="train-stats-value">{stats.bestFinalRewardMA.toFixed(3)}</td>
+                <td className="training-stats-label">Best Final Reward (MA)</td>
+                <td className="training-stats-value">{stats.bestFinalRewardMA.toFixed(3)}</td>
               </tr>
             </tbody>
           </Table>
         )}
-        {chartVisible && <div ref={chartElementRef} className="train-stats-chart" />}
+        {chartVisible && <div ref={chartElementRef} className="training-stats-chart" />}
       </div>
     </div>
   )
 }
 
-export default TrainView
+export default TrainingView

@@ -1,4 +1,4 @@
-.train-content {
+.training-content {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -6,44 +6,44 @@
   width: 100%;
 }
 
-.train-content-inner {
+.training-content-inner {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 }
 
-.train-content-inner * {
+.training-content-inner * {
   margin: .25rem 0;
 }
 
-.train-warning {
+.training-warning {
   font-style: italic;
 }
 
-.train-controls {
+.training-controls {
   display: flex;
   justify-content: space-between;
   width: 100%;
 }
 
-.train-controls-left * {
+.training-controls-left * {
   margin: 0 .25rem;
 }
 
-.train-timer {
+.training-timer {
   font-family: 'Courier New', Courier, monospace;
 }
 
-.train-stats-label {
+.training-stats-label {
   font-weight: bold;
 }
 
-.train-stats-value {
+.training-stats-value {
   font-family: 'Courier New', Courier, monospace;
   width: 50%;
 }
 
-.train-stats-chart {
+.training-stats-chart {
   margin-top: 2rem;
   display: flex;
   justify-content: center;

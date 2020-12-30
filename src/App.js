@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-d
 import Navigation from './Navigation'
 import ManualPlayView from './ManualPlayView'
 import AgentPlayView from './AgentPlayView'
-import TrainView from './TrainView'
+import TrainingView from './TrainingView'
 import Version from './Version'
 import { ROUTES } from './routes'
 import './App.css'
@@ -20,8 +20,8 @@ const App = () => {
             <Route path={ROUTES.agentPlayView}>
               <AgentPlayView />
             </Route>
-            <Route path={ROUTES.trainView}>
-              <TrainView />
+            <Route path={ROUTES.trainingView}>
+              <TrainingView />
             </Route>
             <Route path={ROUTES.home}>
               <Redirect to={ROUTES.agentPlayView} />
