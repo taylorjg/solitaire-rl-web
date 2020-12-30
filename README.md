@@ -14,6 +14,29 @@ _TODO_
 
 ## Successful Training Run
 
+```
+const LR = 0.0015
+const EPSILON_START = 1
+const EPSILON_END = 0.01
+const EPSILON_DECAY_PC = 80
+const GAMMA = 1
+const MAX_EPISODES = 25000
+```
+
+```
+_________________________________________________________________
+Layer (type)                 Output shape              Param #
+=================================================================
+input-layer (Dense)          [null,33]                 1122
+_________________________________________________________________
+output-layer (Dense)         [null,1]                  34
+=================================================================
+Total params: 1156
+Trainable params: 1156
+Non-trainable params: 0
+_________________________________________________________________
+```
+
 ![successful-training-run](screenshots/successful-training-run-smaller.png)
 
 # TODO
