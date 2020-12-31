@@ -1,67 +1,36 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Table from 'react-bootstrap/Table'
 import * as tfvis from '@tensorflow/tfjs-vis'
+import { useElapsedTime, usePerSecondCounter } from './customHooks'
 import * as rl from './solitaire-rl'
 import './TrainingView.css'
+
+const refCallbackAdapter = ref => (...args) => ref.current(...args)
+
+const formatElapsedTime = ms => {
+  const s = ms / 1000
+  const mm = Math.floor(s / 60).toString().padStart(2, '0')
+  const ss = Math.floor(s % 60).toString().padStart(2, '0')
+  return `${mm}:${ss}`
+}
 
 const TrainingView = () => {
 
   const [training, setTraining] = useState(false)
+  const [cancelled, setCancelled] = useState(false)
   const [stats, setStats] = useState(null)
   const [chartVisible, setChartVisible] = useState(false)
   const [movingAverageAvailable, setMovingAverageAvailable] = useState(false)
-  const [timerData, setTimerData] = useState({
-    start: null,
-    elapsed: null,
-    elapsedFormatted: null
-  })
 
-  const cancelledRef = useRef(false)
-  const chartDataLastRef = useRef([])
-  const chartDataBestRef = useRef([])
+  const onSaveRef = useRef(null)
+  const onProgressRef = useRef(null)
+  const onCheckCancelledRef = useRef(null)
+
   const chartElementRef = useRef()
+  const chartValuesRef = useRef([[], []])
 
-  const prevTimeRef = useRef(0)
-  const episodeCount = useRef(0)
-  const epsRef = useRef(0)
-
-  const formatElapsedTime = ms => {
-    const s = ms / 1000
-    const mm = Math.floor(s / 60).toString().padStart(2, '0')
-    const ss = Math.floor(s % 60).toString().padStart(2, '0')
-    return `${mm}:${ss}`
-  }
-
-  const resetTimer = () => {
-    const elapsed = 0
-    setTimerData({
-      start: performance.now(),
-      elapsed,
-      elapsedFormatted: formatElapsedTime(elapsed)
-    })
-  }
-
-  const updateTimer = useCallback(() => {
-    setTimerData(timerData => {
-      const elapsed = performance.now() - timerData.start
-      return {
-        ...timerData,
-        elapsed,
-        elapsedFormatted: formatElapsedTime(elapsed)
-      }
-    })
-  }, [])
-
-  const updateEps = useCallback(() => {
-    episodeCount.current++
-    const now = performance.now()
-    const delta = now - prevTimeRef.current
-    if (delta >= 1000) {
-      epsRef.current = episodeCount.current * 1000 / delta
-      prevTimeRef.current = now
-      episodeCount.current = 0
-    }
-  }, [])
+  const [elapsedTime, updateTimer, resetTimer] = useElapsedTime()
+  const [eps, updateEps, resetEps] = usePerSecondCounter()
 
   const onSave = _model => {
     // TODO: upload model to server...
@@ -73,9 +42,19 @@ const TrainingView = () => {
     updateEps()
   }
 
-  const showChart = useCallback(() => {
+  const onCheckCancelled = () => cancelled
+
+  onSaveRef.current = onSave
+  onProgressRef.current = onProgress
+  onCheckCancelledRef.current = onCheckCancelled
+
+  const resetChartValues = () => {
+    chartValuesRef.current = [[], []]
+  }
+
+  const showChart = () => {
     const data = {
-      values: [chartDataLastRef.current, chartDataBestRef.current],
+      values: chartValuesRef.current,
       series: ['Last', 'Best']
     }
     const opts = {
@@ -86,38 +65,40 @@ const TrainingView = () => {
       seriesColors: ['blue', 'red']
     }
     tfvis.render.linechart(chartElementRef.current, data, opts)
-  }, [])
+  }
 
   useEffect(() => {
     if (stats) {
       if (stats.finalRewardMA !== Number.NEGATIVE_INFINITY) {
         setMovingAverageAvailable(true)
-        const x = stats.episode + 1
-        const pt1 = { x, y: stats.finalRewardMA }
-        const pt2 = { x, y: stats.bestFinalRewardMA }
-        chartDataLastRef.current.push(pt1)
-        chartDataBestRef.current.push(pt2)
+        const x = stats.episode
+        const [lastValues, bestValues] = chartValuesRef.current
+        lastValues.push({ x, y: stats.finalRewardMA })
+        bestValues.push({ x, y: stats.bestFinalRewardMA })
         if (chartVisible) {
           showChart()
         }
       }
     }
-  }, [stats, chartVisible, showChart])
+  }, [stats, chartVisible])
 
   const onTrain = async () => {
     try {
       if (training) return
       setTraining(true)
-      cancelledRef.current = false
-      chartDataLastRef.current = []
-      chartDataBestRef.current = []
-      setChartVisible(false)
-      setMovingAverageAvailable(false)
+      setCancelled(false)
       resetTimer()
-      prevTimeRef.current = performance.now()
-      episodeCount.current = 0
-      epsRef.current = 0
-      await rl.train(onSave, onProgress, cancelledRef)
+      resetEps()
+      setChartVisible(false)
+      resetChartValues()
+      setMovingAverageAvailable(false)
+
+      await rl.train(
+        refCallbackAdapter(onSaveRef),
+        refCallbackAdapter(onProgressRef),
+        refCallbackAdapter(onCheckCancelledRef))
+
+      resetEps()
       setChartVisible(true)
     } finally {
       setTraining(false)
@@ -125,8 +106,8 @@ const TrainingView = () => {
   }
 
   const onCancel = () => {
-    cancelledRef.current = true
-    epsRef.current = 0
+    setCancelled(true)
+    resetEps()
     setChartVisible(true)
   }
 
@@ -160,7 +141,7 @@ const TrainingView = () => {
             }
           </div>
           <div className="training-controls-right">
-            {stats && <div className="training-timer">{timerData.elapsedFormatted}</div>}
+            {stats && <div className="training-timer">{formatElapsedTime(elapsedTime)}</div>}
           </div>
         </div>
         {stats && (
@@ -172,7 +153,7 @@ const TrainingView = () => {
               </tr>
               <tr>
                 <td className="training-stats-label">Episodes per second</td>
-                <td className="training-stats-value">{epsRef.current.toFixed(2)}</td>
+                <td className="training-stats-value">{eps.toFixed(2)}</td>
               </tr>
               <tr>
                 <td className="training-stats-label">Epsilon</td>

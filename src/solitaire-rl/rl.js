@@ -70,7 +70,7 @@ const makePolicy = model => {
   }
 }
 
-const trainLoop = async (env, model, pi, saveFn, progressFn, cancelledRef) => {
+const trainLoop = async (env, model, pi, saveFn, progressFn, checkCancelledFn) => {
   const optimizer = tf.train.adam(LR)
   const lossFn = tf.losses.meanSquaredError
   const finalRewards = []
@@ -126,7 +126,7 @@ const trainLoop = async (env, model, pi, saveFn, progressFn, cancelledRef) => {
         }
 
         await tf.nextFrame()
-        if (cancelledRef.current) {
+        if (checkCancelledFn()) {
           return
         }
         break
@@ -203,9 +203,9 @@ export const makeTrainedAgent = async modelPath => {
   return new TrainedAgent(model)
 }
 
-export const train = async (saveFn, progressFn, cancelledRef) => {
+export const train = async (saveFn, progressFn, checkCancelledFn) => {
   const env = new SolitaireEnv()
   const model = makeModel()
   const pi = makePolicy(model)
-  await trainLoop(env, model, pi, saveFn, progressFn, cancelledRef)
+  await trainLoop(env, model, pi, saveFn, progressFn, checkCancelledFn)
 }
