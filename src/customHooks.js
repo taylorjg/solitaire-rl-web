@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 export const usePerSecondCounter = () => {
 
@@ -43,4 +43,15 @@ export const useElapsedTime = () => {
   }
 
   return [elapsed, update, reset]
+}
+
+export const useCallbackWrapper = cb => {
+  const cbRef = useRef(null)
+  cbRef.current = cb
+  const cbWrapper = (...args) => {
+    if (cbRef.current) {
+      cbRef.current(...args)
+    }
+  }
+  return cbWrapper
 }

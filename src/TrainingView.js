@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import Table from 'react-bootstrap/Table'
 import * as tfvis from '@tensorflow/tfjs-vis'
-import { useElapsedTime, usePerSecondCounter } from './customHooks'
+import { useElapsedTime, usePerSecondCounter, useCallbackWrapper } from './customHooks'
 import * as rl from './solitaire-rl'
 import './TrainingView.css'
-
-const refCallbackAdapter = ref => (...args) => ref.current(...args)
 
 const formatElapsedTime = ms => {
   const s = ms / 1000
@@ -21,10 +19,6 @@ const TrainingView = () => {
   const [stats, setStats] = useState(null)
   const [chartVisible, setChartVisible] = useState(false)
   const [movingAverageAvailable, setMovingAverageAvailable] = useState(false)
-
-  const onSaveRef = useRef(null)
-  const onProgressRef = useRef(null)
-  const onCheckCancelledRef = useRef(null)
 
   const chartElementRef = useRef()
   const chartValuesRef = useRef([[], []])
@@ -44,9 +38,9 @@ const TrainingView = () => {
 
   const onCheckCancelled = () => cancelled
 
-  onSaveRef.current = onSave
-  onProgressRef.current = onProgress
-  onCheckCancelledRef.current = onCheckCancelled
+  const onSaveCallbackWrapper = useCallbackWrapper(onSave)
+  const onProgressCallbackWrapper = useCallbackWrapper(onProgress)
+  const onCheckCancelledCallbackWrapper = useCallbackWrapper(onCheckCancelled)
 
   const resetChartValues = () => {
     chartValuesRef.current = [[], []]
@@ -94,9 +88,9 @@ const TrainingView = () => {
       setMovingAverageAvailable(false)
 
       await rl.train(
-        refCallbackAdapter(onSaveRef),
-        refCallbackAdapter(onProgressRef),
-        refCallbackAdapter(onCheckCancelledRef))
+        onSaveCallbackWrapper,
+        onProgressCallbackWrapper,
+        onCheckCancelledCallbackWrapper)
 
       resetEps()
       setChartVisible(true)
