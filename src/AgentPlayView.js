@@ -78,7 +78,7 @@ const AgentPlayView = () => {
         setFetchingModel(true)
         try {
           setErrorMessage(null)
-          const agent = await rl.makeTrainedAgent(modelPath)
+          const agent = await rl.makeTrainedAgentFromModelPath(modelPath)
           setAgent(agent)
         } catch (error) {
           setErrorMessage(error.message)

@@ -2,6 +2,6 @@
   bottom: .5rem;
   font-size: small;
   font-style: italic;
-  position: absolute;
+  position: fixed;
   right: .5rem;
 }

@@ -9,7 +9,7 @@
 .training-content-inner {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
 }
 
 .training-content-inner * {
@@ -45,7 +45,5 @@
 
 .training-stats-chart {
   margin-top: 2rem;
-  display: flex;
-  justify-content: center;
   width: 100%;
 }

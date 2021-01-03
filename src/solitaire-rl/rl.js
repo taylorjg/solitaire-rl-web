@@ -9,12 +9,13 @@ const tfConfigure = async () => {
 
 tfConfigure()
 
-const LR = 0.0015
-const EPSILON_START = 1
+const LR = 0.001
+const EPSILON_START = 0.50
 const EPSILON_END = 0.01
-const EPSILON_DECAY_PC = 80
+const EPSILON_DECAY_PC = 50
 const GAMMA = 1
-const MAX_EPISODES = 25000
+const MAX_EPISODES = 20000
+const FINAL_REWARD_MA_TARGET = 75
 
 const makeModel = () => {
   const model = tf.sequential()
@@ -121,7 +122,7 @@ const trainLoop = async (env, model, pi, saveFn, progressFn, checkCancelledFn) =
         }
         progressFn(stats)
 
-        if (finalRewardMA >= 50) {
+        if (finalRewardMA >= FINAL_REWARD_MA_TARGET) {
           return saveFn(model)
         }
 
@@ -198,9 +199,11 @@ class TrainedAgent extends BaseAgent {
 export const makeRandomAgent = () =>
   new RandomAgent()
 
-export const makeTrainedAgent = async modelPath => {
+export const makeTrainedAgentFromModel = model => new TrainedAgent(model)
+
+export const makeTrainedAgentFromModelPath = async modelPath => {
   const model = await tf.loadLayersModel(modelPath)
-  return new TrainedAgent(model)
+  return makeTrainedAgentFromModel(model)
 }
 
 export const train = async (saveFn, progressFn, checkCancelledFn) => {

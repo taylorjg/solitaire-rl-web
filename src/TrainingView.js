@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import Table from 'react-bootstrap/Table'
 import * as tfvis from '@tensorflow/tfjs-vis'
 import { useElapsedTime, usePerSecondCounter, useCallbackWrapper } from './customHooks'
+import Board from './Board'
 import * as rl from './solitaire-rl'
 import './TrainingView.css'
 
@@ -19,6 +20,8 @@ const TrainingView = () => {
   const [stats, setStats] = useState(null)
   const [chartVisible, setChartVisible] = useState(false)
   const [movingAverageAvailable, setMovingAverageAvailable] = useState(false)
+  const [showBoard, setShowBoard] = useState(false)
+  const [entries, setEntries] = useState([])
 
   const chartElementRef = useRef()
   const chartValuesRef = useRef([[], []])
@@ -26,8 +29,14 @@ const TrainingView = () => {
   const [elapsedTime, updateTimer, resetTimer] = useElapsedTime()
   const [eps, updateEps, resetEps] = usePerSecondCounter()
 
-  const onSave = _model => {
-    // TODO: upload model to server...
+  const onSave = model => {
+    const agent = rl.makeTrainedAgentFromModel(model)
+    for (; ;) {
+      agent.step()
+      if (agent.done) break
+    }
+    setShowBoard(true)
+    setEntries(agent.entries())
   }
 
   const onProgress = stats => {
@@ -86,6 +95,8 @@ const TrainingView = () => {
       setChartVisible(false)
       resetChartValues()
       setMovingAverageAvailable(false)
+      setShowBoard(false)
+      setEntries([])
 
       await rl.train(
         onSaveCallbackWrapper,
@@ -173,6 +184,7 @@ const TrainingView = () => {
           </Table>
         )}
         {chartVisible && <div ref={chartElementRef} className="training-stats-chart" />}
+        {showBoard && <Board resetBoard={false} entries={entries} interactive={false} />}
       </div>
     </div>
   )

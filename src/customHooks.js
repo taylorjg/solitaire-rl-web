@@ -50,7 +50,7 @@ export const useCallbackWrapper = cb => {
   cbRef.current = cb
   const cbWrapper = (...args) => {
     if (cbRef.current) {
-      cbRef.current(...args)
+      return cbRef.current(...args)
     }
   }
   return cbWrapper
