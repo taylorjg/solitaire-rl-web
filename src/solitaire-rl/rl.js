@@ -12,10 +12,10 @@ tfConfigure()
 const LR = 0.001
 const EPSILON_START = 0.50
 const EPSILON_END = 0.01
-const EPSILON_DECAY_PC = 50
+const EPSILON_DECAY_PC = 75
 const GAMMA = 1
-const MAX_EPISODES = 20000
-const FINAL_REWARD_MA_TARGET = 75
+const MAX_EPISODES = 16000
+const MAX_FINAL_REWARD = 100
 
 const makeModel = () => {
   const model = tf.sequential()
@@ -71,7 +71,18 @@ const makePolicy = model => {
   }
 }
 
+const modelSolvesPuzzle = model => {
+  const agent = makeTrainedAgentFromModel(model)
+  for (; ;) {
+    const stepResult = agent.step()
+    if (stepResult.done) {
+      return stepResult.reward === MAX_FINAL_REWARD
+    }
+  }
+}
+
 const trainLoop = async (env, model, pi, saveFn, progressFn, checkCancelledFn) => {
+  let maxFinalRewardCount = 0
   const optimizer = tf.train.adam(LR)
   const lossFn = tf.losses.meanSquaredError
   const finalRewards = []
@@ -122,8 +133,12 @@ const trainLoop = async (env, model, pi, saveFn, progressFn, checkCancelledFn) =
         }
         progressFn(stats)
 
-        if (finalRewardMA >= FINAL_REWARD_MA_TARGET) {
-          return saveFn(model)
+        if (finalReward === MAX_FINAL_REWARD) {
+          maxFinalRewardCount++
+          console.log(`maxFinalRewardCount: ${maxFinalRewardCount}`)
+          if (modelSolvesPuzzle(model)) {
+            return saveFn(model)
+          }
         }
 
         await tf.nextFrame()
