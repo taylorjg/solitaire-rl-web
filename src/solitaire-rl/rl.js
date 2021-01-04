@@ -9,13 +9,13 @@ const tfConfigure = async () => {
 
 tfConfigure()
 
-const LR = 0.001
+const LR = 0.002
 const EPSILON_START = 0.50
 const EPSILON_END = 0.01
-const EPSILON_DECAY_PC = 75
+const EPSILON_DECAY_EPISODES = 7500
 const GAMMA = 1
-const MAX_EPISODES = 16000
-const MAX_FINAL_REWARD = 100
+const MAX_FINAL_REWARD = 0
+const MAX_EPISODES = 15000
 
 const makeModel = () => {
   const model = tf.sequential()
@@ -24,9 +24,8 @@ const makeModel = () => {
   return model
 }
 
-const makeLinearDecaySchedule = (startVal, endVal, decayPercent) => {
+const makeLinearDecaySchedule = (startVal, endVal, decayEpisodes) => {
   const rangeVal = endVal - startVal
-  const decayEpisodes = MAX_EPISODES * decayPercent / 100
   const increment = rangeVal / decayEpisodes
   return episode => episode > decayEpisodes
     ? endVal
@@ -82,13 +81,12 @@ const modelSolvesPuzzle = model => {
 }
 
 const trainLoop = async (env, model, pi, saveFn, progressFn, checkCancelledFn) => {
-  let maxFinalRewardCount = 0
   const optimizer = tf.train.adam(LR)
   const lossFn = tf.losses.meanSquaredError
   const finalRewards = []
   let bestFinalReward = Number.NEGATIVE_INFINITY
   let bestFinalRewardMA = Number.NEGATIVE_INFINITY
-  const epsilonDecaySchedule = makeLinearDecaySchedule(EPSILON_START, EPSILON_END, EPSILON_DECAY_PC)
+  const epsilonDecaySchedule = makeLinearDecaySchedule(EPSILON_START, EPSILON_END, EPSILON_DECAY_EPISODES)
   for (const episode of U.rangeIter(MAX_EPISODES)) {
     const epsilon = epsilonDecaySchedule(episode)
     let state = env.reset()
@@ -123,6 +121,7 @@ const trainLoop = async (env, model, pi, saveFn, progressFn, checkCancelledFn) =
             bestFinalRewardMA = finalRewardMA
           }
         }
+
         const stats = {
           episode: episode + 1,
           epsilon,
@@ -134,17 +133,17 @@ const trainLoop = async (env, model, pi, saveFn, progressFn, checkCancelledFn) =
         progressFn(stats)
 
         if (finalReward === MAX_FINAL_REWARD) {
-          maxFinalRewardCount++
-          console.log(`maxFinalRewardCount: ${maxFinalRewardCount}`)
           if (modelSolvesPuzzle(model)) {
             return saveFn(model)
           }
         }
 
         await tf.nextFrame()
+
         if (checkCancelledFn()) {
           return
         }
+
         break
       }
     }

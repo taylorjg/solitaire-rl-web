@@ -64,7 +64,7 @@ const TrainingView = () => {
       zoomToFit: true,
       height: 300,
       xLabel: 'Episode',
-      yLabel: 'Final Reward (MA)',
+      yLabel: 'Final Reward (moving average)',
       seriesColors: ['blue', 'red']
     }
     tfvis.render.linechart(chartElementRef.current, data, opts)

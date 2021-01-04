@@ -1,6 +1,6 @@
 {
   "name": "solitaire-rl-web",
-  "version": "0.0.27",
+  "version": "0.0.28",
   "description": "Solve Solitaire using reinforcement learning",
   "private": true,
   "dependencies": {

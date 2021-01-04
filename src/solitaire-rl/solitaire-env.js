@@ -219,6 +219,6 @@ export class SolitaireEnv {
         reward -= manhattanDistanceFromCentre
       }
     }
-    return reward === 0 ? 100 : reward
+    return reward
   }
 }
