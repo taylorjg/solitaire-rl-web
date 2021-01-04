@@ -3,6 +3,7 @@
   "version": "0.0.28",
   "description": "Solve Solitaire using reinforcement learning",
   "private": true,
+  "type": "module",
   "dependencies": {
     "@tensorflow/tfjs": "^2.7.0",
     "@tensorflow/tfjs-vis": "^1.4.3",

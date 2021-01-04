@@ -86,7 +86,7 @@ export const LOCATIONS = Array.from(iterLocations())
 const LOCATIONS_MAP = new Map(LOCATIONS.map(location => [location.key, location]))
 export const ACTIONS = Array.from(iterActions())
 
-class Board {
+export class Board {
   constructor(boardState) {
     if (boardState) {
       this._boardState = new Map(boardState)
