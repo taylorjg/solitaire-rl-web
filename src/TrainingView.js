@@ -4,14 +4,8 @@ import * as tfvis from '@tensorflow/tfjs-vis'
 import { useElapsedTime, usePerSecondCounter, useCallbackWrapper } from './customHooks'
 import Board from './Board'
 import * as rl from './solitaire-rl'
+import * as U from './solitaire-rl/utils'
 import './TrainingView.css'
-
-const formatElapsedTime = ms => {
-  const s = ms / 1000
-  const mm = Math.floor(s / 60).toString().padStart(2, '0')
-  const ss = Math.floor(s % 60).toString().padStart(2, '0')
-  return `${mm}:${ss}`
-}
 
 const TrainingView = () => {
 
@@ -146,7 +140,7 @@ const TrainingView = () => {
             }
           </div>
           <div className="training-controls-right">
-            {stats && <div className="training-timer">{formatElapsedTime(elapsedTime)}</div>}
+            {stats && <div className="training-timer">{U.formatElapsedTime(elapsedTime)}</div>}
           </div>
         </div>
         {stats && (

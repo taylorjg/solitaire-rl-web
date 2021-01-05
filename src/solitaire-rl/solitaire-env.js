@@ -99,6 +99,11 @@ export class Board {
     return this.validActions().length === 0
   }
 
+  get solved() {
+    const stringOfNumbers = Array.from(this._boardState.values()).map(Number).join('')
+    return stringOfNumbers === '000000000000000010000000000000000'
+  }
+
   validActions() {
     const actionIndices = U.range(ACTIONS.length)
     return actionIndices.filter(actionIndex => this.isValidAction(actionIndex))
