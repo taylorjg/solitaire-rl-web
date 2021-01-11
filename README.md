@@ -159,9 +159,51 @@ In this mode, training doesn't always succeed. Here are some typical results:
 
 These results compare favourably with the baseline results given above.
 
+# Running Locally
+
+## Option 1
+
+Use two separate terminals:
+
+* a terminal to run the development server to serve out the React app
+* a terminal to run a separate Express server to serve out the trained model (proxied requests from the development server)
+
+```
+# terminal 1
+node server
+```
+
+```
+# terminal 2
+npm start
+```
+
+The output of `npm start` should indicate the URL to use in your web browser.
+
+## Option 2
+
+Build the React app and serve everything out from a single Express server:
+
+```
+npm run build
+node server
+```
+
+Open a web browser to http://localhost:3222.
+
+To use a different port, do this:
+
+```
+PORT=1234 node server
+```
+
 # Screenshots
 
 ## Manual Play
+
+Click a piece to select it. Only pieces with valid moves are selectable. When a piece is selected,
+it is highlighted along with its valid destinations. To actually make a move, click a
+valid destination.
 
 ![manual-play](screenshots/manual-play.png)
 
@@ -170,6 +212,8 @@ These results compare favourably with the baseline results given above.
 ![agent-play](screenshots/agent-play.png)
 
 ## Successful Training Run
+
+Note that showing the chart during training slows down training considerably.
 
 ![successful-training-run](screenshots/successful-training-run.png)
 
