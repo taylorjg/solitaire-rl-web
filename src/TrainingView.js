@@ -150,6 +150,18 @@ const TrainingView = () => {
   const onChangeSelectedFred = e =>
     setSelectedEndCondition(e.target.value)
 
+  const getBackgroundClass = () => {
+    switch (trainingOutcome) {
+      case 0:
+      default:
+        return ''
+      case 1:
+        return 'bg-success'
+      case 2:
+        return 'bg-danger'
+    }
+  }
+
   return (
     <div className="training-content">
       <div className="training-content-inner">
@@ -184,7 +196,7 @@ const TrainingView = () => {
           </div>
         </div>
         {stats && (
-          <Table className={trainingOutcome === 1 ? 'bg-success': trainingOutcome === 2 ? 'bg-danger' : ''} size="sm">
+          <Table className={getBackgroundClass()} size="sm">
             <tbody>
               <tr>
                 <td className="training-stats-label">Episode</td>
@@ -195,7 +207,7 @@ const TrainingView = () => {
                 <td className="training-stats-value">{eps.toFixed(2)}</td>
               </tr>
               <tr>
-                <td className="training-stats-label">Epsilon</td>
+                <td className="training-stats-label">&epsilon;</td>
                 <td className="training-stats-value">{stats.epsilon.toFixed(5)}</td>
               </tr>
               <tr>

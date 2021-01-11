@@ -1,6 +1,6 @@
 {
   "name": "solitaire-rl-web",
-  "version": "0.0.29",
+  "version": "0.0.30",
   "description": "Solve Solitaire using reinforcement learning",
   "private": true,
   "dependencies": {
@@ -10,7 +10,7 @@
     "@testing-library/react": "^11.2.2",
     "@testing-library/user-event": "^12.5.0",
     "axios": "^0.21.0",
-    "bootstrap": "^4.5.3",
+    "bootstrap": "^3.3.7",
     "connect-history-api-fallback": "^1.6.0",
     "express": "^4.17.1",
     "morgan": "^1.10.0",

@@ -125,7 +125,7 @@ that corresponds to the biggest next state value.
     * Calculate a new target value for the current state:
       * If the episode is not done, target = reward + GAMMA * value of next state
       * If the episode is done, target = reward
-    * Calculate the loss = MSE of difference between current value of the current state and the new target value for the current state
+    * Calculate the loss = MSE of difference between the current value of the current state and the new target value of the current state
     * Use the optimizer to back propagate the loss
   * Check whether to stop training (see next section)
 
@@ -156,6 +156,8 @@ In this mode, training doesn't always succeed. Here are some typical results:
 | 01:50 | 4776 | Yes |
 | 02:32 | 6554 | Yes |
 | 01:16 | 3374 | Yes |
+
+These results compare favourably with the baseline results given above.
 
 # Screenshots
 
