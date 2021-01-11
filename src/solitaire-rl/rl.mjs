@@ -1,6 +1,6 @@
-import * as tf from '@tensorflow/tfjs'
-import { SolitaireEnv, observationToBoard, boardToObservation, ACTIONS } from './solitaire-env'
-import * as U from './utils'
+import tf from '@tensorflow/tfjs'
+import { SolitaireEnv, observationToBoard, boardToObservation, ACTIONS } from './solitaire-env.mjs'
+import * as U from './utils.mjs'
 
 const tfConfigure = async () => {
   await tf.ready()
@@ -9,18 +9,21 @@ const tfConfigure = async () => {
 
 tfConfigure()
 
-const LR = 0.002
-const EPSILON_START = 0.50
-const EPSILON_END = 0.01
-const EPSILON_DECAY_EPISODES = 7500
+const MAX_EPISODES = 10000
+const LR = 0.001
+const EPSILON_START = 0.5
+const EPSILON_END = 0.1
+const EPSILON_DECAY_EPISODES = MAX_EPISODES / 2
 const GAMMA = 1
-const MAX_FINAL_REWARD = 0
-const MAX_EPISODES = 15000
 
 const makeModel = () => {
+  const kernelInitializer = tf.initializers.randomUniform({ minval: 0, maxval: 0.5 })
   const model = tf.sequential()
-  model.add(tf.layers.dense({ inputShape: [33], units: 33, activation: 'relu', name: 'input-layer' }))
-  model.add(tf.layers.dense({ units: 1, name: 'output-layer' }))
+  model.add(tf.layers.dense({ inputShape: [33], units: 10, activation: 'tanh', name: 'input-layer', kernelInitializer }))
+  model.add(tf.layers.dense({ units: 1, name: 'output-layer', kernelInitializer }))
+  const lines = []
+  model.summary(undefined, undefined, line => lines.push(line))
+  console.log(lines.join('\n'))
   return model
 }
 
@@ -42,10 +45,7 @@ const evaluateValidActions = (model, state) => {
     }
     const validActions = currentBoard.validActions()
     const nextStates = validActions.map(evaluateValidAction)
-    // const predictStart = performance.now()
     const nextStateValues = model.predict(tf.tensor(nextStates))
-    // const predictEnd = performance.now()
-    // console.log(`predictElapsed: ${(predictEnd - predictStart).toFixed(2)}; nextStates.length: ${nextStates.length}`)
     return U.zip(nextStateValues.dataSync(), validActions)
   })
 }
@@ -70,18 +70,54 @@ const makePolicy = model => {
   }
 }
 
-const modelSolvesPuzzle = model => {
-  const agent = makeTrainedAgentFromModel(model)
-  for (; ;) {
-    const stepResult = agent.step()
-    if (stepResult.done) {
-      return stepResult.reward === MAX_FINAL_REWARD
+const checkEndCondition0 = env =>
+  env.solved
+
+const checkModelSolvesPuzzle = (model, iterations, randomMoveCount) => {
+  console.log(`[checkModelSolvesPuzzle] iterations: ${iterations}; randomMoveCount: ${randomMoveCount}`)
+  const agent = makeTrainedAgentFromModel(model, randomMoveCount)
+  return U.range(iterations).every(iteration => {
+    const actions = []
+    agent.reset()
+    while (!agent.done) {
+      const { actionIndex } = agent.step()
+      actions.push(actionIndex)
     }
+    const solved = agent.solved
+    console.log(`[checkModelSolvesPuzzle] iteration: ${iteration}; actions: ${JSON.stringify(actions)}; solved: ${solved}`)
+    return solved
+  })
+}
+
+const checkEndCondition1 = model => {
+  const iterations = 1
+  const randomMoveCount = 0
+  return checkModelSolvesPuzzle(model, iterations, randomMoveCount)
+}
+
+const checkEndCondition2 = model => {
+  const iterations = 10
+  const randomMoveCount = 1
+  return checkModelSolvesPuzzle(model, iterations, randomMoveCount)
+}
+
+const checkEndCondition = (endCondition, model, env) => {
+  switch (endCondition) {
+
+    case 'endCondition0':
+      return checkEndCondition0(env)
+
+    case 'endCondition1':
+    default:
+      return checkEndCondition1(model)
+
+    case 'endCondition2':
+      return checkEndCondition2(model)
   }
 }
 
-const trainLoop = async (env, model, pi, saveFn, progressFn, checkCancelledFn) => {
-  const optimizer = tf.train.adam(LR)
+const trainLoop = async (env, model, pi, endCondition, callbacks) => {
+  const optimizer = tf.train.sgd(LR)
   const lossFn = tf.losses.meanSquaredError
   const finalRewards = []
   let bestFinalReward = Number.NEGATIVE_INFINITY
@@ -90,12 +126,13 @@ const trainLoop = async (env, model, pi, saveFn, progressFn, checkCancelledFn) =
   for (const episode of U.rangeIter(MAX_EPISODES)) {
     const epsilon = epsilonDecaySchedule(episode)
     let state = env.reset()
+    const actions = []
     for (; ;) {
       const [nextStateValue, action] = pi(state, epsilon)
+      actions.push(action)
       const [nextState, reward, done] = env.step(action)
       const target = reward + (1 - done) * GAMMA * nextStateValue
       const stateLocal = state
-      // const optStart = performance.now()
       optimizer.minimize(() => tf.tidy(() => {
         const stateTensor = tf.tensor(stateLocal).expandDims(0)
         const stateValueTensor = model.apply(stateTensor).squeeze(-1)
@@ -103,12 +140,9 @@ const trainLoop = async (env, model, pi, saveFn, progressFn, checkCancelledFn) =
         const loss = lossFn(stateValueTensor, targetTensor)
         return loss
       }))
-      // const optEnd = performance.now()
-      // console.log(`optElapsed: ${(optEnd - optStart).toFixed(2)}`)
       state = nextState
 
       if (done) {
-        // console.log(JSON.stringify(tf.memory()))
         const finalReward = reward
         finalRewards.push(finalReward)
         if (finalReward > bestFinalReward) {
@@ -128,26 +162,29 @@ const trainLoop = async (env, model, pi, saveFn, progressFn, checkCancelledFn) =
           finalReward,
           bestFinalReward,
           finalRewardMA,
-          bestFinalRewardMA
+          bestFinalRewardMA,
+          actions
         }
-        progressFn(stats)
+        callbacks.progress(stats)
 
-        if (finalReward === MAX_FINAL_REWARD) {
-          if (modelSolvesPuzzle(model)) {
-            return saveFn(model)
-          }
+        if (checkEndCondition(endCondition, model, env)) {
+          optimizer.dispose()
+          return callbacks.trainingSuccess(model, actions)
         }
 
-        await tf.nextFrame()
-
-        if (checkCancelledFn()) {
+        if (callbacks.checkCancelled()) {
+          optimizer.dispose()
           return
         }
 
+        await tf.nextFrame()
         break
       }
     }
   }
+
+  callbacks.trainingFailure(model)
+  optimizer.dispose()
 }
 
 class BaseAgent {
@@ -156,20 +193,20 @@ class BaseAgent {
     this._state = this._env.reset()
   }
 
-  entries() {
-    return this._env.entries()
-  }
-
   get done() {
-    return observationToBoard(this._state).done
+    return this._env.done
   }
 
-  reset = () => {
+  get solved() {
+    return this._env.solved
+  }
+
+  reset() {
     this._state = this._env.reset()
     return this._state
   }
 
-  step = () => {
+  step() {
     if (this.done) {
       throw new Error('This episode is done - call reset to go again')
     }
@@ -180,17 +217,20 @@ class BaseAgent {
     const [state, reward, done] = this._env.step(actionIndex)
     this._state = state
     const entries = this._env.entries()
-    // console.log(JSON.stringify(tf.memory()))
-    return { state, reward, done, entries, action }
+    return { state, reward, done, entries, action, actionIndex }
   }
 
-  chooseAction = () => {
+  chooseAction() {
     throw new Error('Derived classes must override BaseAgent#chooseAction')
+  }
+
+  entries() {
+    return this._env.entries()
   }
 }
 
 class RandomAgent extends BaseAgent {
-  chooseAction = () => {
+  chooseAction() {
     const board = observationToBoard(this._state)
     const validActions = board.validActions()
     const action = randomChoice(validActions)
@@ -198,31 +238,63 @@ class RandomAgent extends BaseAgent {
   }
 }
 
-class TrainedAgent extends BaseAgent {
-  constructor(model) {
+class HardcodedActionsAgent extends BaseAgent {
+  constructor(actions) {
     super()
+    this._actions = actions
+    this._index = 0
+  }
+
+  chooseAction() {
+    return this._actions[this._index++]
+  }
+
+  reset() {
+    super.reset()
+    this._index = 0
+  }
+}
+
+class TrainedAgent extends BaseAgent {
+  constructor(model, randomMoveCount = 0) {
+    super()
+    this._randomMoveCount = randomMoveCount
+    this._randomMovesMade = 0
     this._pi = makePolicy(model)
   }
 
-  chooseAction = () => {
-    const [, action] = this._pi(this._state)
+  chooseAction() {
+    const epsilon = this._randomMovesMade++ < this._randomMoveCount ? 1 : 0
+    const [, action] = this._pi(this._state, epsilon)
     return action
+  }
+
+  reset() {
+    super.reset()
+    this._randomMovesMade = 0
   }
 }
 
 export const makeRandomAgent = () =>
   new RandomAgent()
 
-export const makeTrainedAgentFromModel = model => new TrainedAgent(model)
+export const makeHardcodedActionsAgent = actions =>
+  new HardcodedActionsAgent(actions)
 
-export const makeTrainedAgentFromModelPath = async modelPath => {
+export const makeTrainedAgentFromModel = (model, randomMoveCount = 0) =>
+  new TrainedAgent(model, randomMoveCount)
+
+export const makeTrainedAgentFromModelPath = async (modelPath, randomMoveCount = 0) => {
   const model = await tf.loadLayersModel(modelPath)
-  return makeTrainedAgentFromModel(model)
+  return makeTrainedAgentFromModel(model, randomMoveCount)
 }
 
-export const train = async (saveFn, progressFn, checkCancelledFn) => {
+export const train = async (endCondition, callbacks) => {
+  console.log(JSON.stringify(tf.memory()))
   const env = new SolitaireEnv()
   const model = makeModel()
   const pi = makePolicy(model)
-  await trainLoop(env, model, pi, saveFn, progressFn, checkCancelledFn)
+  await trainLoop(env, model, pi, endCondition, callbacks)
+  model.dispose()
+  console.log(JSON.stringify(tf.memory()))
 }

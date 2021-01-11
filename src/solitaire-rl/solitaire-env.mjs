@@ -1,4 +1,4 @@
-import * as U from './utils.js'
+import * as U from './utils.mjs'
 
 const UP = 0
 const DOWN = 1
@@ -100,8 +100,10 @@ export class Board {
   }
 
   get solved() {
-    const stringOfNumbers = Array.from(this._boardState.values()).map(Number).join('')
-    return stringOfNumbers === '000000000000000010000000000000000'
+    const remainingPieceCount = Array.from(this._boardState.values())
+      .filter(isOccupied => isOccupied)
+      .length
+    return remainingPieceCount === 1 && this.location(CENTRE)
   }
 
   validActions() {
@@ -161,6 +163,14 @@ const EMPTY_INFO = {}
 export class SolitaireEnv {
   constructor() {
     this._board = new Board()
+  }
+
+  get done() {
+    return this._board.done
+  }
+
+  get solved() {
+    return this._board.solved
   }
 
   reset = () => {

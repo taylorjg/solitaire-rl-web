@@ -3,13 +3,15 @@ import Table from 'react-bootstrap/Table'
 import * as tfvis from '@tensorflow/tfjs-vis'
 import { useElapsedTime, usePerSecondCounter, useCallbackWrapper } from './customHooks'
 import Board from './Board'
-import * as rl from './solitaire-rl'
-import * as U from './solitaire-rl/utils'
+import * as rl from './solitaire-rl/index.mjs'
+import * as U from './solitaire-rl/utils.mjs'
 import './TrainingView.css'
 
 const TrainingView = () => {
 
+  const [selectedEndCondition, setSelectedEndCondition] = useState("endCondition1")
   const [training, setTraining] = useState(false)
+  const [trainingOutcome, setTrainingOutcome] = useState(0)
   const [cancelled, setCancelled] = useState(false)
   const [stats, setStats] = useState(null)
   const [chartVisible, setChartVisible] = useState(false)
@@ -23,14 +25,35 @@ const TrainingView = () => {
   const [elapsedTime, updateTimer, resetTimer] = useElapsedTime()
   const [eps, updateEps, resetEps] = usePerSecondCounter()
 
-  const onSave = model => {
-    const agent = rl.makeTrainedAgentFromModel(model)
-    for (; ;) {
-      agent.step()
-      if (agent.done) break
+  const onTrainingSuccess = (model, actions) => {
+    let agent
+    switch (selectedEndCondition) {
+      case 'endCondition0':
+        agent = rl.makeHardcodedActionsAgent(actions)
+        break
+      case 'endCondition1':
+      default:
+        agent = rl.makeTrainedAgentFromModel(model, 0)
+        break
+      case 'endCondition2':
+        agent = rl.makeTrainedAgentFromModel(model, 1)
+        break
     }
+
+    const agentActions = []
+    while (!agent.done) {
+      const { actionIndex } = agent.step()
+      agentActions.push(actionIndex)
+    }
+    console.log(`agentActions: ${JSON.stringify(agentActions)}`)
+
+    setTrainingOutcome(1)
     setShowBoard(true)
     setEntries(agent.entries())
+  }
+
+  const onTrainingFailure = model => {
+    setTrainingOutcome(2)
   }
 
   const onProgress = stats => {
@@ -41,7 +64,8 @@ const TrainingView = () => {
 
   const onCheckCancelled = () => cancelled
 
-  const onSaveCallbackWrapper = useCallbackWrapper(onSave)
+  const onTrainingSuccessCallbackWrapper = useCallbackWrapper(onTrainingSuccess)
+  const onTrainingFailureCallbackWrapper = useCallbackWrapper(onTrainingFailure)
   const onProgressCallbackWrapper = useCallbackWrapper(onProgress)
   const onCheckCancelledCallbackWrapper = useCallbackWrapper(onCheckCancelled)
 
@@ -83,6 +107,7 @@ const TrainingView = () => {
     try {
       if (training) return
       setTraining(true)
+      setTrainingOutcome(0)
       setCancelled(false)
       resetTimer()
       resetEps()
@@ -92,10 +117,14 @@ const TrainingView = () => {
       setShowBoard(false)
       setEntries([])
 
-      await rl.train(
-        onSaveCallbackWrapper,
-        onProgressCallbackWrapper,
-        onCheckCancelledCallbackWrapper)
+      const callbacks = {
+        trainingSuccess: onTrainingSuccessCallbackWrapper,
+        trainingFailure: onTrainingFailureCallbackWrapper,
+        progress: onProgressCallbackWrapper,
+        checkCancelled: onCheckCancelledCallbackWrapper
+      }
+
+      await rl.train(selectedEndCondition, callbacks)
 
       resetEps()
       setChartVisible(true)
@@ -118,12 +147,23 @@ const TrainingView = () => {
     setChartVisible(false)
   }
 
+  const onChangeSelectedFred = e =>
+    setSelectedEndCondition(e.target.value)
+
   return (
     <div className="training-content">
       <div className="training-content-inner">
         <div className="training-warning">
           NOTE: currently, training doesn't always work! I aim to make it more reliable.
           </div>
+        <div>
+          Stop training when:
+          <select value={selectedEndCondition} onChange={onChangeSelectedFred} disabled={training}>
+            <option value="endCondition0">First solution is found</option>
+            <option value="endCondition1">Model consistently solves puzzle</option>
+            <option value="endCondition2">Model consistently solves puzzle (after random first move)</option>
+          </select>
+        </div>
         <div className="training-controls">
           <div className="training-controls-left">
             {
@@ -144,7 +184,7 @@ const TrainingView = () => {
           </div>
         </div>
         {stats && (
-          <Table size="sm">
+          <Table className={trainingOutcome === 1 ? 'bg-success': trainingOutcome === 2 ? 'bg-danger' : ''} size="sm">
             <tbody>
               <tr>
                 <td className="training-stats-label">Episode</td>

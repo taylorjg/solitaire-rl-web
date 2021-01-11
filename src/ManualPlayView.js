@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import Board from './Board'
-import * as rl from './solitaire-rl'
+import * as rl from './solitaire-rl/index.mjs'
 import './ManualPlayView.css'
 
 const ManualPlayView = () => {

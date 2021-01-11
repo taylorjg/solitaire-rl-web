@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import Alert from 'react-bootstrap/Alert'
 import Board from './Board'
-import * as rl from './solitaire-rl'
+import * as rl from './solitaire-rl/index.mjs'
 import './AgentPlayView.css'
 
 const modelPath = '/models/model.json'
@@ -23,6 +23,8 @@ const AgentPlayView = () => {
   const [finalReward, setFinalReward] = useState(null)
 
   const runTimerRef = useRef(null)
+
+  console.log(`errorMessage: ${errorMessage}`)
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -136,7 +138,7 @@ const AgentPlayView = () => {
       {
         errorMessage && (
           <div className="alert-wrapper">
-            <Alert variant="danger" dismissible onClose={() => setErrorMessage(null)}>
+            <Alert transition={false} variant="danger" dismissible onClose={() => setErrorMessage(null)}>
               {errorMessage}
             </Alert>
           </div>

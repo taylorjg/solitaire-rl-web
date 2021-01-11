@@ -1,4 +1,4 @@
-import { SolitaireEnv, observationToBoard } from './solitaire-env'
+import { SolitaireEnv, observationToBoard } from './solitaire-env.mjs'
 
 const solutionActions = [
   68, 49, 71, 33, 75, 71, 5, 11,
@@ -31,7 +31,7 @@ describe('SolitaireEnv', () => {
       [obs, reward, done] = env.step(action)
     }
     expect(obs).toEqual(Array(33).fill(0).fill(1, 16, 17))
-    expect(reward).toEqual(100)
+    expect(reward).toEqual(0)
     expect(done).toEqual(true)
   })
 

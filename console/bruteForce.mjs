@@ -1,6 +1,6 @@
 import { performance } from 'perf_hooks'
-import { Board } from './src/solitaire-rl/solitaire-env.js'
-import * as U from './src/solitaire-rl/utils.js'
+import { Board } from '../src/solitaire-rl/solitaire-env.mjs'
+import * as U from '../src/solitaire-rl/utils.mjs'
 
 let episodes = 0
 
