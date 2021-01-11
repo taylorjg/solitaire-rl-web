@@ -81,6 +81,9 @@ const Board = ({
       if (validActionIndices.length) {
         setSelectedMarble(location)
         setAvailableHoles(validActionIndices.map(validActionIndex => rl.ACTIONS[validActionIndex].toLocation))
+      } else {
+        setSelectedMarble(null)
+        setAvailableHoles([])
       }
     }
   }
