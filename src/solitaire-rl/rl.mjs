@@ -1,5 +1,5 @@
 import tf from '@tensorflow/tfjs'
-import { SolitaireEnv, observationToBoard, boardToObservation, ACTIONS } from './solitaire-env.mjs'
+import { SolitaireEnv, observationToBoard, boardToObservation, Board, ACTIONS } from './solitaire-env.mjs'
 import * as U from './utils.mjs'
 
 const tfConfigure = async () => {
@@ -12,15 +12,16 @@ tfConfigure()
 const MAX_EPISODES = 10000
 const LR = 0.001
 const EPSILON_START = 0.5
-const EPSILON_END = 0.1
-const EPSILON_DECAY_EPISODES = MAX_EPISODES / 2
+const EPSILON_END = 0.05
+const EPSILON_DECAY_EPISODES = 5000
 const GAMMA = 1
 
 const makeModel = () => {
-  const kernelInitializer = tf.initializers.randomUniform({ minval: 0, maxval: 0.5 })
+  const kernelInitializer = tf.initializers.randomUniform({ minval: -0.5, maxval: +0.5 })
   const model = tf.sequential()
   model.add(tf.layers.dense({ inputShape: [33], units: 10, activation: 'tanh', name: 'input-layer', kernelInitializer }))
   model.add(tf.layers.dense({ units: 1, name: 'output-layer', kernelInitializer }))
+
   const lines = []
   model.summary(undefined, undefined, line => lines.push(line))
   console.log(lines.join('\n'))
@@ -50,8 +51,6 @@ const evaluateValidActions = (model, state) => {
   })
 }
 
-const randomChoice = xs => xs[Math.floor(Math.random() * xs.length)]
-
 const bestPairBy = (pairs, fn) => {
   const [pairsHead, ...pairsTail] = pairs
   return pairsTail.reduce(
@@ -63,56 +62,54 @@ const makePolicy = model => {
   return (s, epsilon = 0) => {
     const pairs = evaluateValidActions(model, s)
     if (Math.random() < epsilon) {
-      return randomChoice(pairs)
+      return U.randomChoice(pairs)
     } else {
       return bestPairBy(pairs, U.fst)
     }
   }
 }
 
-const checkEndCondition0 = env =>
-  env.solved
+const checkEndCondition1 = model => {
+  const actions = []
+  const agent = makeTrainedAgentFromModel(model)
+  while (!agent.done) {
+    const { actionIndex } = agent.step()
+    actions.push(actionIndex)
+  }
+  const solved = agent.solved
+  console.log(`[checkEndCondition1] actions (${actions.length}): ${JSON.stringify(actions)}; solved: ${solved}`)
+  return solved
+}
 
-const checkModelSolvesPuzzle = (model, iterations, randomMoveCount) => {
-  console.log(`[checkModelSolvesPuzzle] iterations: ${iterations}; randomMoveCount: ${randomMoveCount}`)
-  const agent = makeTrainedAgentFromModel(model, randomMoveCount)
-  return U.range(iterations).every(iteration => {
+const checkEndCondition2 = model => {
+  console.log(`[checkEndCondition2] ${'-'.repeat(20)} START ${'-'.repeat(20)}`)
+  const board = new Board()
+  const initialActions = board.validActions()
+  return initialActions.every(initialAction => {
     const actions = []
-    agent.reset()
+    const agent = makeTrainedAgentFromModel(model, { initialAction })
     while (!agent.done) {
       const { actionIndex } = agent.step()
       actions.push(actionIndex)
     }
     const solved = agent.solved
-    console.log(`[checkModelSolvesPuzzle] iteration: ${iteration}; actions: ${JSON.stringify(actions)}; solved: ${solved}`)
+    console.log(`[checkEndCondition2] actions (${actions.length}): ${JSON.stringify(actions)}; solved: ${solved}`)
     return solved
   })
-}
-
-const checkEndCondition1 = model => {
-  const iterations = 1
-  const randomMoveCount = 0
-  return checkModelSolvesPuzzle(model, iterations, randomMoveCount)
-}
-
-const checkEndCondition2 = model => {
-  const iterations = 10
-  const randomMoveCount = 1
-  return checkModelSolvesPuzzle(model, iterations, randomMoveCount)
 }
 
 const checkEndCondition = (endCondition, model, env) => {
   switch (endCondition) {
 
     case 'endCondition0':
-      return checkEndCondition0(env)
+      return env.solved
 
     case 'endCondition1':
     default:
-      return checkEndCondition1(model)
+      return env.solved && checkEndCondition1(model)
 
     case 'endCondition2':
-      return checkEndCondition2(model)
+      return env.solved && checkEndCondition2(model)
   }
 }
 
@@ -233,7 +230,7 @@ class RandomAgent extends BaseAgent {
   chooseAction() {
     const board = observationToBoard(this._state)
     const validActions = board.validActions()
-    const action = randomChoice(validActions)
+    const action = U.randomChoice(validActions)
     return action
   }
 }
@@ -256,22 +253,27 @@ class HardcodedActionsAgent extends BaseAgent {
 }
 
 class TrainedAgent extends BaseAgent {
-  constructor(model, randomMoveCount = 0) {
+  constructor(model, options) {
     super()
-    this._randomMoveCount = randomMoveCount
-    this._randomMovesMade = 0
+    this._options = options || {}
+    this._isInitialMove = true
     this._pi = makePolicy(model)
   }
 
   chooseAction() {
-    const epsilon = this._randomMovesMade++ < this._randomMoveCount ? 1 : 0
-    const [, action] = this._pi(this._state, epsilon)
+    if (this._isInitialMove && this._options.initialAction !== undefined) {
+      const action = this._options.initialAction
+      this._isInitialMove = false
+      return action
+    }
+    const [, action] = this._pi(this._state)
+    this._isInitialMove = false
     return action
   }
 
   reset() {
     super.reset()
-    this._randomMovesMade = 0
+    this._isInitialMove = true
   }
 }
 
@@ -281,12 +283,12 @@ export const makeRandomAgent = () =>
 export const makeHardcodedActionsAgent = actions =>
   new HardcodedActionsAgent(actions)
 
-export const makeTrainedAgentFromModel = (model, randomMoveCount = 0) =>
-  new TrainedAgent(model, randomMoveCount)
+export const makeTrainedAgentFromModel = (model, options) =>
+  new TrainedAgent(model, options)
 
-export const makeTrainedAgentFromModelPath = async (modelPath, randomMoveCount = 0) => {
+export const makeTrainedAgentFromModelPath = async (modelPath, options) => {
   const model = await tf.loadLayersModel(modelPath)
-  return makeTrainedAgentFromModel(model, randomMoveCount)
+  return makeTrainedAgentFromModel(model, options)
 }
 
 export const train = async (endCondition, callbacks) => {

@@ -172,8 +172,8 @@ const TrainingView = () => {
           Stop training when:
           <select value={selectedEndCondition} onChange={onChangeSelectedFred} disabled={training}>
             <option value="endCondition0">First solution is found</option>
-            <option value="endCondition1">Model consistently solves puzzle</option>
-            <option value="endCondition2">Model consistently solves puzzle (after random first move)</option>
+            <option value="endCondition1">Greedy policy solves puzzle</option>
+            <option value="endCondition2">Greedy policy solves puzzle for all first moves</option>
           </select>
         </div>
         <div className="training-controls">

@@ -37,3 +37,6 @@ export const formatElapsedTime = ms => {
   const ss = Math.floor(s % 60).toString().padStart(2, '0')
   return `${mm}:${ss}`
 }
+
+export const randomChoice = xs =>
+  xs[Math.floor(Math.random() * xs.length)]
