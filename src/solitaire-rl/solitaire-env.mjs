@@ -224,7 +224,6 @@ export class SolitaireEnv {
   }
 
   _calculateFinalReward = () => {
-    // if (this.solved) return 1000
     let reward = 0
     for (const [location, isOccupied] of this._board.entries()) {
       if (isOccupied) {

@@ -12,7 +12,7 @@ tfConfigure()
 const MAX_EPISODES = 10000
 const LR = 0.001
 const EPSILON_START = 0.5
-const EPSILON_END = 0.05
+const EPSILON_END = 0.01
 const EPSILON_DECAY_EPISODES = 5000
 const GAMMA = 1
 
@@ -22,9 +22,10 @@ const makeModel = () => {
   model.add(tf.layers.dense({ inputShape: [33], units: 10, activation: 'tanh', name: 'input-layer', kernelInitializer }))
   model.add(tf.layers.dense({ units: 1, name: 'output-layer', kernelInitializer }))
 
-  const lines = []
-  model.summary(undefined, undefined, line => lines.push(line))
-  console.log(lines.join('\n'))
+  const summaryLines = []
+  model.summary(undefined, undefined, summaryLine => summaryLines.push(summaryLine))
+  console.log(summaryLines.join('\n'))
+
   return model
 }
 
