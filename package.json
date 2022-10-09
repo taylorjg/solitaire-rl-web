@@ -2,6 +2,7 @@
   "name": "solitaire-rl-web",
   "version": "0.0.32",
   "description": "Solve Solitaire using reinforcement learning",
+  "homepage": "https://taylorjg.github.io/solitaire-rl-web",
   "private": true,
   "dependencies": {
     "@tensorflow/tfjs": "^2.7.0",
@@ -9,11 +10,9 @@
     "@testing-library/jest-dom": "^5.11.6",
     "@testing-library/react": "^11.2.2",
     "@testing-library/user-event": "^12.5.0",
-    "axios": "^0.21.0",
     "bootstrap": "^3.3.7",
     "connect-history-api-fallback": "^1.6.0",
-    "express": "^4.17.1",
-    "morgan": "^1.10.0",
+    "gh-pages": "^4.0.0",
     "react": "^17.0.1",
     "react-bootstrap": "^1.4.0",
     "react-dom": "^17.0.1",
@@ -26,7 +25,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "deploy": "npm run build && gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -45,6 +45,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "proxy": "http://localhost:3222"
+  }
 }

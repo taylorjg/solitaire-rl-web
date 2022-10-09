@@ -5,7 +5,7 @@ import Board from './Board'
 import * as rl from './solitaire-rl/index.mjs'
 import './AgentPlayView.css'
 
-const modelPath = '/models/model.json'
+const modelPath = 'model/model.json'
 
 const useQuery = () => new URLSearchParams(useLocation().search)
 

@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-dom"
+import { HashRouter as Router, Switch, Route, Redirect } from "react-router-dom"
 import Navigation from './Navigation'
 import ManualPlayView from './ManualPlayView'
 import AgentPlayView from './AgentPlayView'

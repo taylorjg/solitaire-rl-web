@@ -161,40 +161,8 @@ These results compare favourably with the baseline results given above.
 
 # Running Locally
 
-## Option 1
-
-Use two separate terminals:
-
-* a terminal to run the development server to serve out the React app
-* a terminal to run a separate Express server to serve out the trained model (proxied requests from the development server)
-
 ```
-# terminal 1
-node server
-```
-
-```
-# terminal 2
-npm start
-```
-
-The output of `npm start` should indicate the URL to use in your web browser.
-
-## Option 2
-
-Build the React app and serve everything out from a single Express server:
-
-```
-npm run build
-node server
-```
-
-Open a web browser to http://localhost:3222.
-
-To use a different port, do this:
-
-```
-PORT=1234 node server
+PUBLIC_URL=. npm start
 ```
 
 # Screenshots
