@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/solitaire-rl-web/static/css/main.c5e51391.chunk.css",
-    "main.js": "/solitaire-rl-web/static/js/main.a4cb2b6a.chunk.js",
-    "main.js.map": "/solitaire-rl-web/static/js/main.a4cb2b6a.chunk.js.map",
+    "main.js": "/solitaire-rl-web/static/js/main.dfb3558f.chunk.js",
+    "main.js.map": "/solitaire-rl-web/static/js/main.dfb3558f.chunk.js.map",
     "runtime-main.js": "/solitaire-rl-web/static/js/runtime-main.5641c0dc.js",
     "runtime-main.js.map": "/solitaire-rl-web/static/js/runtime-main.5641c0dc.js.map",
     "static/css/2.b9832f88.chunk.css": "/solitaire-rl-web/static/css/2.b9832f88.chunk.css",
@@ -21,6 +21,6 @@
     "static/css/2.b9832f88.chunk.css",
     "static/js/2.9e621f85.chunk.js",
     "static/css/main.c5e51391.chunk.css",
-    "static/js/main.a4cb2b6a.chunk.js"
+    "static/js/main.dfb3558f.chunk.js"
   ]
 }
