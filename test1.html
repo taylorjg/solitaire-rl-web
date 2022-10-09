@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Test 1</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    svg {
+      background-color: purple;
+      display: block;
+    }
+
+    .board {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .board-wrapper {
+      background-color: seagreen;
+      position: relative;
+    }
+
+    .board-above {
+      position: absolute;
+      bottom: 100%;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin-bottom: .5rem;
+    }
+
+    .board-below {
+      position: absolute;
+      top: 100%;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin-top: .5rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="board">
+    <div class="board-wrapper">
+      <svg width="250" height="250"></svg>
+      <div class="board-above">
+        <button>Above</button>
+      </div>
+      <div class="board-below">
+        <button>Below</button>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

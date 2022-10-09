@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Test 2</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    .outer {
+      background-color: plum;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      padding: 2rem;
+      background-color: purple;
+      display: flex;
+      justify-content: center;
+    }
+
+    .header a {
+      color: white;
+    }
+
+    .main-content {
+      background-color: seagreen;
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .main-content svg {
+      background-color: turquoise;
+    }
+
+    .board-wrapper {
+      margin: 2rem;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      overflow-y: scroll;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="outer">
+    <div class="header">
+      <a href="https://github.com/taylorjg">GitHub</a>
+    </div>
+    <div class="main-content">
+      <div class="board-wrapper">
+        <svg width="250" height="2500"></svg>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
