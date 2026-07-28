@@ -8,8 +8,8 @@
   },
   "dependencies": {
     "@react-spring/web": "^10.0.1",
-    "@tensorflow/tfjs": "^2.7.0",
-    "@tensorflow/tfjs-vis": "^1.4.3",
+    "@tensorflow/tfjs": "^4.22.0",
+    "@tensorflow/tfjs-vis": "^1.5.1",
     "bootstrap": "^5.3.3",
     "prop-types": "^15.8.1",
     "react": "^19.0.0",

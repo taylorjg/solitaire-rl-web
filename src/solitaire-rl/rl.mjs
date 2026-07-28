@@ -1,13 +1,18 @@
+import '@tensorflow/tfjs-backend-cpu'
 import * as tf from '@tensorflow/tfjs'
 import { SolitaireEnv, observationToBoard, boardToObservation, Board, ACTIONS } from './solitaire-env.mjs'
 import * as U from './utils.mjs'
 
 const tfConfigure = async () => {
   await tf.ready()
-  await tf.setBackend('cpu')
+  // Node/tests: use CPU. Browser: keep WebGL default (same as pre–TF.js 4 behaviour).
+  if (typeof window === 'undefined') {
+    await tf.setBackend('cpu')
+  }
 }
 
-tfConfigure()
+/** Await before inference so TF backends are initialized. */
+const tfReady = tfConfigure()
 
 const MAX_EPISODES = 10000
 const LR = 0.001
@@ -289,10 +294,12 @@ export const makeTrainedAgentFromModel = (model, options) =>
 
 export const makeTrainedAgentFromModelPath = async (modelPath, options) => {
   const model = await tf.loadLayersModel(modelPath)
+  await tfReady
   return makeTrainedAgentFromModel(model, options)
 }
 
 export const train = async (endCondition, callbacks) => {
+  await tfReady
   console.log(JSON.stringify(tf.memory()))
   const env = new SolitaireEnv()
   const model = makeModel()

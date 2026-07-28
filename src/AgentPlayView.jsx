@@ -113,6 +113,7 @@ const AgentPlayView = () => {
             <option value="random">Random Agent</option>
             <option value="trained">Trained Agent</option>
           </select>
+          {fetchingModel && <span className="model-loading">Loading model…</span>}
         </div>
 
         <Board
@@ -124,10 +125,10 @@ const AgentPlayView = () => {
 
         <div className="board-controls-below">
           <div>
-            <button type="button" disabled={agent === null || agent.done || running} onClick={onStep}>Step</button>
+            <button type="button" disabled={agent === null || agent.done || running || fetchingModel} onClick={onStep}>Step</button>
             {running
               ? <button type="button" onClick={onStop}>Stop</button>
-              : <button type="button" disabled={agent === null || agent.done} onClick={onRun}>Run</button>
+              : <button type="button" disabled={agent === null || agent.done || fetchingModel} onClick={onRun}>Run</button>
             }
             <button type="button" disabled={agent === null || running} onClick={onReset}>Reset</button>
           </div>

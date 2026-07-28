@@ -25,6 +25,11 @@
   margin: 0 .25rem;
 }
 
+.model-loading {
+  font-size: 0.875rem;
+  color: #666;
+}
+
 .board-controls-below {
   position: absolute;
   width: 100%;
