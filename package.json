@@ -4,6 +4,9 @@
   "description": "Solve Solitaire using reinforcement learning",
   "homepage": "https://taylorjg.github.io/solitaire-rl-web",
   "private": true,
+  "engines": {
+    "node": "16.x"
+  },
   "dependencies": {
     "@tensorflow/tfjs": "^2.7.0",
     "@tensorflow/tfjs-vis": "^1.4.3",
@@ -25,6 +28,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "test:ci": "react-scripts test --watchAll=false",
     "eject": "react-scripts eject",
     "deploy": "npm run build && gh-pages -d build"
   },
