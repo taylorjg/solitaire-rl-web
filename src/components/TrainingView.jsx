@@ -1,196 +1,218 @@
-import { useEffect, useRef, useState } from 'react'
-import Table from 'react-bootstrap/Table'
-import * as tfvis from '@tensorflow/tfjs-vis'
-import { useElapsedTime } from '@app/hooks/useElapsedTime'
-import { usePerSecondCounter } from '@app/hooks/usePerSecondCounter'
-import Board from './Board'
-import * as rl from '@app/solitaire-rl/index.js'
-import * as U from '@app/solitaire-rl/utils.js'
-import './TrainingView.css'
+import { useEffect, useRef, useState } from "react";
+import Table from "react-bootstrap/Table";
+import * as tfvis from "@tensorflow/tfjs-vis";
+import { useElapsedTime } from "@app/hooks/useElapsedTime";
+import { usePerSecondCounter } from "@app/hooks/usePerSecondCounter";
+import Board from "./Board";
+import * as rl from "@app/solitaire-rl/index.js";
+import * as U from "@app/solitaire-rl/utils.js";
+import "./TrainingView.css";
 
 const TrainingView = () => {
+  const [selectedEndCondition, setSelectedEndCondition] =
+    useState("endCondition1");
+  const [training, setTraining] = useState(false);
+  const [trainingOutcome, setTrainingOutcome] = useState(0);
+  const [cancelled, setCancelled] = useState(false);
+  const [stats, setStats] = useState(null);
+  const [chartVisible, setChartVisible] = useState(false);
+  const [movingAverageAvailable, setMovingAverageAvailable] = useState(false);
+  const [showBoard, setShowBoard] = useState(false);
+  const [entries, setEntries] = useState([]);
 
-  const [selectedEndCondition, setSelectedEndCondition] = useState("endCondition1")
-  const [training, setTraining] = useState(false)
-  const [trainingOutcome, setTrainingOutcome] = useState(0)
-  const [cancelled, setCancelled] = useState(false)
-  const [stats, setStats] = useState(null)
-  const [chartVisible, setChartVisible] = useState(false)
-  const [movingAverageAvailable, setMovingAverageAvailable] = useState(false)
-  const [showBoard, setShowBoard] = useState(false)
-  const [entries, setEntries] = useState([])
+  const chartElementRef = useRef();
+  const chartValuesRef = useRef([[], []]);
+  const cancelledRef = useRef(false);
 
-  const chartElementRef = useRef()
-  const chartValuesRef = useRef([[], []])
-  const cancelledRef = useRef(false)
-  cancelledRef.current = cancelled
+  useEffect(() => {
+    cancelledRef.current = cancelled;
+  }, [cancelled]);
 
-  const [elapsedTime, updateTimer, resetTimer] = useElapsedTime()
-  const [eps, updateEps, resetEps] = usePerSecondCounter()
+  const [elapsedTime, updateTimer, resetTimer] = useElapsedTime();
+  const [eps, updateEps, resetEps] = usePerSecondCounter();
 
   const onTrainingSuccess = (model, actions) => {
-    let agent
+    let agent;
     switch (selectedEndCondition) {
-      case 'endCondition0':
-        agent = rl.makeHardcodedActionsAgent(actions)
-        break
-      case 'endCondition1':
+      case "endCondition0":
+        agent = rl.makeHardcodedActionsAgent(actions);
+        break;
+      case "endCondition1":
       default:
-        agent = rl.makeTrainedAgentFromModel(model, 0)
-        break
-      case 'endCondition2':
-        agent = rl.makeTrainedAgentFromModel(model, 1)
-        break
+        agent = rl.makeTrainedAgentFromModel(model, 0);
+        break;
+      case "endCondition2":
+        agent = rl.makeTrainedAgentFromModel(model, 1);
+        break;
     }
 
-    const agentActions = []
+    const agentActions = [];
     while (!agent.done) {
-      const { actionIndex } = agent.step()
-      agentActions.push(actionIndex)
+      const { actionIndex } = agent.step();
+      agentActions.push(actionIndex);
     }
-    console.log(`agentActions: ${JSON.stringify(agentActions)}`)
+    console.log(`agentActions: ${JSON.stringify(agentActions)}`);
 
-    setTrainingOutcome(1)
-    setShowBoard(true)
-    setEntries(agent.entries())
-  }
+    setTrainingOutcome(1);
+    setShowBoard(true);
+    setEntries(agent.entries());
+  };
 
-  const onTrainingFailure = model => {
-    setTrainingOutcome(2)
-  }
+  const onTrainingFailure = () => {
+    setTrainingOutcome(2);
+  };
 
-  const onProgress = stats => {
-    setStats(stats)
-    updateTimer()
-    updateEps()
-  }
+  const onProgress = (stats) => {
+    setStats(stats);
+    updateTimer();
+    updateEps();
+  };
 
   const resetChartValues = () => {
-    chartValuesRef.current = [[], []]
-  }
+    chartValuesRef.current = [[], []];
+  };
 
   const showChart = () => {
     const data = {
       values: chartValuesRef.current,
-      series: ['Last', 'Best']
-    }
+      series: ["Last", "Best"],
+    };
     const opts = {
       zoomToFit: true,
       height: 300,
-      xLabel: 'Episode',
-      yLabel: 'Final Reward (moving average)',
-      seriesColors: ['blue', 'red']
-    }
-    tfvis.render.linechart(chartElementRef.current, data, opts)
-  }
+      xLabel: "Episode",
+      yLabel: "Final Reward (moving average)",
+      seriesColors: ["blue", "red"],
+    };
+    tfvis.render.linechart(chartElementRef.current, data, opts);
+  };
 
   useEffect(() => {
     if (stats) {
       if (stats.finalRewardMA !== Number.NEGATIVE_INFINITY) {
-        setMovingAverageAvailable(true)
-        const x = stats.episode
-        const [lastValues, bestValues] = chartValuesRef.current
-        lastValues.push({ x, y: stats.finalRewardMA })
-        bestValues.push({ x, y: stats.bestFinalRewardMA })
+        setMovingAverageAvailable(true);
+        const x = stats.episode;
+        const [lastValues, bestValues] = chartValuesRef.current;
+        lastValues.push({ x, y: stats.finalRewardMA });
+        bestValues.push({ x, y: stats.bestFinalRewardMA });
         if (chartVisible) {
-          showChart()
+          showChart();
         }
       }
     }
-  }, [stats, chartVisible])
+  }, [stats, chartVisible]);
 
   const onTrain = async () => {
     try {
-      if (training) return
-      setTraining(true)
-      setTrainingOutcome(0)
-      cancelledRef.current = false
-      setCancelled(false)
-      resetTimer()
-      resetEps()
-      setChartVisible(false)
-      resetChartValues()
-      setMovingAverageAvailable(false)
-      setShowBoard(false)
-      setEntries([])
+      if (training) return;
+      setTraining(true);
+      setTrainingOutcome(0);
+      cancelledRef.current = false;
+      setCancelled(false);
+      resetTimer();
+      resetEps();
+      setChartVisible(false);
+      resetChartValues();
+      setMovingAverageAvailable(false);
+      setShowBoard(false);
+      setEntries([]);
 
       const callbacks = {
         trainingSuccess: onTrainingSuccess,
         trainingFailure: onTrainingFailure,
         progress: onProgress,
         checkCancelled: () => cancelledRef.current,
-      }
+      };
 
-      await rl.train(selectedEndCondition, callbacks)
+      await rl.train(selectedEndCondition, callbacks);
 
-      resetEps()
-      setChartVisible(true)
+      resetEps();
+      setChartVisible(true);
     } finally {
-      setTraining(false)
+      setTraining(false);
     }
-  }
+  };
 
   const onCancel = () => {
-    cancelledRef.current = true
-    setCancelled(true)
-    resetEps()
-    setChartVisible(true)
-  }
+    cancelledRef.current = true;
+    setCancelled(true);
+    resetEps();
+    setChartVisible(true);
+  };
 
   const onShowChart = () => {
-    setChartVisible(true)
-  }
+    setChartVisible(true);
+  };
 
   const onHideChart = () => {
-    setChartVisible(false)
-  }
+    setChartVisible(false);
+  };
 
-  const onChangeSelectedFred = e =>
-    setSelectedEndCondition(e.target.value)
+  const onChangeSelectedFred = (e) => setSelectedEndCondition(e.target.value);
 
   const getBackgroundClass = () => {
     switch (trainingOutcome) {
       case 0:
       default:
-        return ''
+        return "";
       case 1:
-        return 'table-success'
+        return "table-success";
       case 2:
-        return 'table-danger'
+        return "table-danger";
     }
-  }
+  };
 
   return (
     <div className="training-content">
       <div className="training-content-inner">
         <div className="training-warning">
-          NOTE: currently, training doesn't always work! I aim to make it more reliable.
-          </div>
+          NOTE: currently, training doesn't always work! I aim to make it more
+          reliable.
+        </div>
         <div>
           Stop training when:
-          <select value={selectedEndCondition} onChange={onChangeSelectedFred} disabled={training}>
+          <select
+            value={selectedEndCondition}
+            onChange={onChangeSelectedFred}
+            disabled={training}
+          >
             <option value="endCondition0">First solution is found</option>
             <option value="endCondition1">Greedy policy solves puzzle</option>
-            <option value="endCondition2">Greedy policy solves puzzle for all first moves</option>
+            <option value="endCondition2">
+              Greedy policy solves puzzle for all first moves
+            </option>
           </select>
         </div>
         <div className="training-controls">
           <div className="training-controls-left">
-            {
-              training
-                ? <button onClick={onCancel}>Cancel</button>
-                : <button onClick={onTrain}>Train</button>
-            }
-            {
-              stats && (
-                chartVisible
-                  ? <button disabled={!movingAverageAvailable} onClick={onHideChart}>Hide Chart</button>
-                  : <button disabled={!movingAverageAvailable} onClick={onShowChart}>Show Chart</button>
-              )
-            }
+            {training ? (
+              <button onClick={onCancel}>Cancel</button>
+            ) : (
+              <button onClick={onTrain}>Train</button>
+            )}
+            {stats &&
+              (chartVisible ? (
+                <button
+                  disabled={!movingAverageAvailable}
+                  onClick={onHideChart}
+                >
+                  Hide Chart
+                </button>
+              ) : (
+                <button
+                  disabled={!movingAverageAvailable}
+                  onClick={onShowChart}
+                >
+                  Show Chart
+                </button>
+              ))}
           </div>
           <div className="training-controls-right">
-            {stats && <div className="training-timer">{U.formatElapsedTime(elapsedTime)}</div>}
+            {stats && (
+              <div className="training-timer">
+                {U.formatElapsedTime(elapsedTime)}
+              </div>
+            )}
           </div>
         </div>
         {stats && (
@@ -206,7 +228,9 @@ const TrainingView = () => {
               </tr>
               <tr>
                 <td className="training-stats-label">&epsilon;</td>
-                <td className="training-stats-value">{stats.epsilon.toFixed(5)}</td>
+                <td className="training-stats-value">
+                  {stats.epsilon.toFixed(5)}
+                </td>
               </tr>
               <tr>
                 <td className="training-stats-label">Last Final Reward</td>
@@ -214,24 +238,34 @@ const TrainingView = () => {
               </tr>
               <tr>
                 <td className="training-stats-label">Best Final Reward</td>
-                <td className="training-stats-value">{stats.bestFinalReward}</td>
+                <td className="training-stats-value">
+                  {stats.bestFinalReward}
+                </td>
               </tr>
               <tr>
                 <td className="training-stats-label">Last Final Reward (MA)</td>
-                <td className="training-stats-value">{stats.finalRewardMA.toFixed(3)}</td>
+                <td className="training-stats-value">
+                  {stats.finalRewardMA.toFixed(3)}
+                </td>
               </tr>
               <tr>
                 <td className="training-stats-label">Best Final Reward (MA)</td>
-                <td className="training-stats-value">{stats.bestFinalRewardMA.toFixed(3)}</td>
+                <td className="training-stats-value">
+                  {stats.bestFinalRewardMA.toFixed(3)}
+                </td>
               </tr>
             </tbody>
           </Table>
         )}
-        {chartVisible && <div ref={chartElementRef} className="training-stats-chart" />}
-        {showBoard && <Board resetBoard={false} entries={entries} interactive={false} />}
+        {chartVisible && (
+          <div ref={chartElementRef} className="training-stats-chart" />
+        )}
+        {showBoard && (
+          <Board resetBoard={false} entries={entries} interactive={false} />
+        )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default TrainingView
+export default TrainingView;

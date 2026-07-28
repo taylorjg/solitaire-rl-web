@@ -1,24 +1,27 @@
-import { useEffect, useState } from 'react'
-import PropTypes from 'prop-types'
-import { animated, useSpring } from '@react-spring/web'
-import * as rl from '@app/solitaire-rl/index.js'
-import './Board.css'
+import { useEffect, useState } from "react";
+import PropTypes from "prop-types";
+import { animated, useSpring } from "@react-spring/web";
+import * as rl from "@app/solitaire-rl/index.js";
+import "./Board.css";
 
-const GRID_X = 100 / 8
-const GRID_Y = 100 / 8
-const HOLE_RADIUS = Math.min(GRID_X, GRID_Y) / 4
-const MARBLE_RADIUS = Math.min(GRID_X, GRID_Y) / 1.5
-const MARBLE_HIGHLIGHT_RADIUS = Math.min(GRID_X, GRID_Y) / 2.15
+const GRID_X = 100 / 8;
+const GRID_Y = 100 / 8;
+const HOLE_RADIUS = Math.min(GRID_X, GRID_Y) / 4;
+const MARBLE_RADIUS = Math.min(GRID_X, GRID_Y) / 1.5;
+const MARBLE_HIGHLIGHT_RADIUS = Math.min(GRID_X, GRID_Y) / 2.15;
 
-const makeRandomRotation = () => Math.random() * 60 - 30
-const makeRandomRotationKvp = location => [location.key, makeRandomRotation()]
-const makeRandomRotationKvps = () => rl.LOCATIONS.map(makeRandomRotationKvp)
-const makeRandomRotationsMap = () => new Map(makeRandomRotationKvps())
+const makeRandomRotation = () => Math.random() * 60 - 30;
+const makeRandomRotationKvp = (location) => [
+  location.key,
+  makeRandomRotation(),
+];
+const makeRandomRotationKvps = () => rl.LOCATIONS.map(makeRandomRotationKvp);
+const makeRandomRotationsMap = () => new Map(makeRandomRotationKvps());
 
-const makeTransformStyle = angle => `rotate(${angle}deg)`
-const makeTransformOriginStyle = (cx, cy) => `${cx}% ${cy}%`
+const makeTransformStyle = (angle) => `rotate(${angle}deg)`;
+const makeTransformOriginStyle = (cx, cy) => `${cx}% ${cy}%`;
 
-const assetUrl = path => `${import.meta.env.BASE_URL}${path}`
+const assetUrl = (path) => `${import.meta.env.BASE_URL}${path}`;
 
 const AnimatedMovingMarble = ({
   cxFrom,
@@ -27,7 +30,7 @@ const AnimatedMovingMarble = ({
   cyTo,
   angleFrom,
   angleTo,
-  onClick
+  onClick,
 }) => {
   const springs = useSpring({
     from: {
@@ -43,7 +46,7 @@ const AnimatedMovingMarble = ({
       transformOrigin: makeTransformOriginStyle(cxTo, cyTo),
     },
     config: { duration: 600 },
-  })
+  });
 
   return (
     <animated.circle
@@ -57,8 +60,8 @@ const AnimatedMovingMarble = ({
         transformOrigin: springs.transformOrigin,
       }}
     />
-  )
-}
+  );
+};
 
 AnimatedMovingMarble.propTypes = {
   cxFrom: PropTypes.number.isRequired,
@@ -68,7 +71,7 @@ AnimatedMovingMarble.propTypes = {
   angleFrom: PropTypes.number.isRequired,
   angleTo: PropTypes.number.isRequired,
   onClick: PropTypes.func,
-}
+};
 
 const AnimatedViaMarble = ({ cx, cy, angle, undo, onClick, onRest }) => {
   const springs = useSpring({
@@ -77,7 +80,7 @@ const AnimatedViaMarble = ({ cx, cy, angle, undo, onClick, onRest }) => {
     config: { duration: 300 },
     delay: undo ? 0 : 300,
     onRest,
-  })
+  });
 
   return (
     <animated.circle
@@ -92,8 +95,8 @@ const AnimatedViaMarble = ({ cx, cy, angle, undo, onClick, onRest }) => {
         opacity: springs.opacity,
       }}
     />
-  )
-}
+  );
+};
 
 AnimatedViaMarble.propTypes = {
   cx: PropTypes.number.isRequired,
@@ -102,7 +105,7 @@ AnimatedViaMarble.propTypes = {
   undo: PropTypes.bool,
   onClick: PropTypes.func,
   onRest: PropTypes.func,
-}
+};
 
 const Board = ({
   resetBoard,
@@ -111,140 +114,155 @@ const Board = ({
   undo,
   interactive,
   validateManualMove,
-  makeManualMove
+  makeManualMove,
 }) => {
-  const [randomRotations, setRandomRotations] = useState(() => makeRandomRotationsMap())
-  const [showViaMarble, setShowViaMarble] = useState(false)
-  const [selectedMarble, setSelectedMarble] = useState(null)
-  const [selectedHole, setSelectedHole] = useState(null)
-  const [availableHoles, setAvailableHoles] = useState([])
+  const [randomRotations, setRandomRotations] = useState(() =>
+    makeRandomRotationsMap()
+  );
+  const [showViaMarble, setShowViaMarble] = useState(false);
+  const [selectedMarble, setSelectedMarble] = useState(null);
+  const [selectedHole, setSelectedHole] = useState(null);
+  const [availableHoles, setAvailableHoles] = useState([]);
 
   useEffect(() => {
     if (resetBoard) {
-      setRandomRotations(makeRandomRotationsMap())
+      setRandomRotations(makeRandomRotationsMap());
     }
-  }, [entries, resetBoard])
+  }, [entries, resetBoard]);
 
   useEffect(() => {
-    setShowViaMarble(Boolean(action))
-    setSelectedMarble(null)
-    setSelectedHole(null)
-    setAvailableHoles([])
-  }, [action, undo])
+    setShowViaMarble(Boolean(action));
+    setSelectedMarble(null);
+    setSelectedHole(null);
+    setAvailableHoles([]);
+  }, [action, undo]);
 
-  const onSelectHole = location => () => {
-    if (!interactive) return
-    if (availableHoles.find(availableHole => availableHole.sameAs(location))) {
-      const fromLocation = selectedMarble
-      const toLocation = location
-      const validActionIndices = validateManualMove({ fromLocation, toLocation })
+  const onSelectHole = (location) => () => {
+    if (!interactive) return;
+    if (
+      availableHoles.find((availableHole) => availableHole.sameAs(location))
+    ) {
+      const fromLocation = selectedMarble;
+      const toLocation = location;
+      const validActionIndices = validateManualMove({
+        fromLocation,
+        toLocation,
+      });
       if (validActionIndices.length === 1) {
-        makeManualMove(validActionIndices[0])
+        makeManualMove(validActionIndices[0]);
       }
     }
-  }
+  };
 
-  const onMouseOverHole = location => () => {
-    if (!interactive) return
-    if (availableHoles.find(availableHole => availableHole.sameAs(location))) {
-      setSelectedHole(location)
+  const onMouseOverHole = (location) => () => {
+    if (!interactive) return;
+    if (
+      availableHoles.find((availableHole) => availableHole.sameAs(location))
+    ) {
+      setSelectedHole(location);
     }
-  }
+  };
 
   const onMouseOutHole = () => {
-    if (!interactive) return
-    setSelectedHole(null)
-  }
+    if (!interactive) return;
+    setSelectedHole(null);
+  };
 
-  const onSelectMarble = location => () => {
-    if (!interactive) return
+  const onSelectMarble = (location) => () => {
+    if (!interactive) return;
     if (selectedMarble && selectedMarble.sameAs(location)) {
-      setSelectedMarble(null)
-      setAvailableHoles([])
+      setSelectedMarble(null);
+      setAvailableHoles([]);
     } else {
-      const fromLocation = location
-      const validActionIndices = validateManualMove({ fromLocation })
+      const fromLocation = location;
+      const validActionIndices = validateManualMove({ fromLocation });
       if (validActionIndices.length) {
-        setSelectedMarble(location)
-        setAvailableHoles(validActionIndices.map(validActionIndex => rl.ACTIONS[validActionIndex].toLocation))
+        setSelectedMarble(location);
+        setAvailableHoles(
+          validActionIndices.map(
+            (validActionIndex) => rl.ACTIONS[validActionIndex].toLocation
+          )
+        );
       } else {
-        setSelectedMarble(null)
-        setAvailableHoles([])
+        setSelectedMarble(null);
+        setAvailableHoles([]);
       }
     }
-  }
+  };
 
-  const locationToCircleCentre = location => [
+  const locationToCircleCentre = (location) => [
     GRID_X + GRID_X * location.col,
-    GRID_Y + GRID_Y * location.row
-  ]
+    GRID_Y + GRID_Y * location.row,
+  ];
 
   const renderHoles = () => {
-    return rl.LOCATIONS.map(location => {
-      const [cx, cy] = locationToCircleCentre(location)
-      const classNames = ['board-hole']
-      if (availableHoles.find(availableHole => availableHole.sameAs(location))) {
-        classNames.push('board-hole--available')
+    return rl.LOCATIONS.map((location) => {
+      const [cx, cy] = locationToCircleCentre(location);
+      const classNames = ["board-hole"];
+      if (
+        availableHoles.find((availableHole) => availableHole.sameAs(location))
+      ) {
+        classNames.push("board-hole--available");
       }
       if (selectedHole && selectedHole.sameAs(location)) {
-        classNames.push('board-hole--selected')
+        classNames.push("board-hole--selected");
       }
       const props = {
         cx,
         cy,
         r: HOLE_RADIUS,
-        className: classNames.join(' '),
+        className: classNames.join(" "),
         onClick: onSelectHole(location),
         onMouseOver: onMouseOverHole(location),
-        onMouseOut: onMouseOutHole
-      }
-      return <circle key={`hole-${location.key}`} {...props} />
-    })
-  }
+        onMouseOut: onMouseOutHole,
+      };
+      return <circle key={`hole-${location.key}`} {...props} />;
+    });
+  };
 
   const renderMarbles = () => {
-    const occupiedEntries = entries.filter(([, isOccupied]) => isOccupied)
+    const occupiedEntries = entries.filter(([, isOccupied]) => isOccupied);
     return occupiedEntries.map(([location]) => {
       if (action) {
-        const startLocation = undo ? action.toLocation : action.fromLocation
-        const endLocation = undo ? action.fromLocation : action.toLocation
+        const startLocation = undo ? action.toLocation : action.fromLocation;
+        const endLocation = undo ? action.fromLocation : action.toLocation;
         if (location.sameAs(endLocation)) {
-          return renderFromToMarble(startLocation, endLocation)
+          return renderFromToMarble(startLocation, endLocation);
         }
         if (undo && location.sameAs(action.viaLocation)) {
-          return null
+          return null;
         }
       }
-      return renderStaticMarble(location)
-    })
-  }
+      return renderStaticMarble(location);
+    });
+  };
 
-  const renderStaticMarble = location => {
-    const [cx, cy] = locationToCircleCentre(location)
-    const angle = randomRotations.get(location.key)
+  const renderStaticMarble = (location) => {
+    const [cx, cy] = locationToCircleCentre(location);
+    const angle = randomRotations.get(location.key);
     const props = {
       cx,
       cy,
       r: MARBLE_RADIUS,
-      className: 'board-marble',
-      onClick: onSelectMarble(location)
-    }
+      className: "board-marble",
+      onClick: onSelectMarble(location),
+    };
     const style = {
       transform: makeTransformStyle(angle),
-      transformOrigin: makeTransformOriginStyle(cx, cy)
-    }
-    return <circle key={location.key} {...props} style={style} />
-  }
+      transformOrigin: makeTransformOriginStyle(cx, cy),
+    };
+    return <circle key={location.key} {...props} style={style} />;
+  };
 
   const renderViaMarble = () => {
-    if (!action) return null
-    if (!undo && !showViaMarble) return null
-    const viaLocation = action.viaLocation
-    const [cx, cy] = locationToCircleCentre(viaLocation)
-    const angle = randomRotations.get(viaLocation.key)
+    if (!action) return null;
+    if (!undo && !showViaMarble) return null;
+    const viaLocation = action.viaLocation;
+    const [cx, cy] = locationToCircleCentre(viaLocation);
+    const angle = randomRotations.get(viaLocation.key);
     const maybeOnClick = undo
       ? { onClick: onSelectMarble(viaLocation) }
-      : undefined
+      : undefined;
     return (
       <AnimatedViaMarble
         key={viaLocation.key}
@@ -255,14 +273,14 @@ const Board = ({
         onRest={() => setShowViaMarble(false)}
         {...maybeOnClick}
       />
-    )
-  }
+    );
+  };
 
   const renderFromToMarble = (startLocation, endLocation) => {
-    const [cxFrom, cyFrom] = locationToCircleCentre(startLocation)
-    const [cxTo, cyTo] = locationToCircleCentre(endLocation)
-    const angleFrom = randomRotations.get(startLocation.key)
-    const angleTo = randomRotations.get(endLocation.key)
+    const [cxFrom, cyFrom] = locationToCircleCentre(startLocation);
+    const [cxTo, cyTo] = locationToCircleCentre(endLocation);
+    const angleFrom = randomRotations.get(startLocation.key);
+    const angleTo = randomRotations.get(endLocation.key);
     return (
       <AnimatedMovingMarble
         key={endLocation.key}
@@ -274,30 +292,50 @@ const Board = ({
         angleTo={angleTo}
         onClick={onSelectMarble(endLocation)}
       />
-    )
-  }
+    );
+  };
 
   const renderMarbleHighlight = () => {
-    if (!selectedMarble) return null
-    const [cx, cy] = locationToCircleCentre(selectedMarble)
+    if (!selectedMarble) return null;
+    const [cx, cy] = locationToCircleCentre(selectedMarble);
     const props = {
       cx,
       cy,
       r: MARBLE_HIGHLIGHT_RADIUS,
-      className: 'board-marble-highlight'
-    }
-    return <circle {...props} />
-  }
+      className: "board-marble-highlight",
+    };
+    return <circle {...props} />;
+  };
 
   return (
     <div>
       <svg className="board" viewBox="0 0 100 100">
         <defs>
-          <pattern id="board" height="100%" width="100%" patternContentUnits="objectBoundingBox">
-            <image href={assetUrl('images/board.jpeg')} preserveAspectRatio="none" width="1" height="1" />
+          <pattern
+            id="board"
+            height="100%"
+            width="100%"
+            patternContentUnits="objectBoundingBox"
+          >
+            <image
+              href={assetUrl("images/board.jpeg")}
+              preserveAspectRatio="none"
+              width="1"
+              height="1"
+            />
           </pattern>
-          <pattern id="marble" height="100%" width="100%" patternContentUnits="objectBoundingBox">
-            <image href={assetUrl('images/marble.png')} preserveAspectRatio="none" width="1" height="1" />
+          <pattern
+            id="marble"
+            height="100%"
+            width="100%"
+            patternContentUnits="objectBoundingBox"
+          >
+            <image
+              href={assetUrl("images/marble.png")}
+              preserveAspectRatio="none"
+              width="1"
+              height="1"
+            />
           </pattern>
         </defs>
         <rect className="board-background"></rect>
@@ -307,8 +345,8 @@ const Board = ({
         {renderMarbleHighlight()}
       </svg>
     </div>
-  )
-}
+  );
+};
 
 Board.propTypes = {
   resetBoard: PropTypes.bool.isRequired,
@@ -317,7 +355,7 @@ Board.propTypes = {
   undo: PropTypes.bool,
   interactive: PropTypes.bool,
   validateManualMove: PropTypes.func,
-  makeManualMove: PropTypes.func
-}
+  makeManualMove: PropTypes.func,
+};
 
-export default Board
+export default Board;

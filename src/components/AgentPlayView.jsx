@@ -1,119 +1,123 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { useLocation } from 'react-router-dom'
-import Alert from 'react-bootstrap/Alert'
-import Board from './Board'
-import * as rl from '@app/solitaire-rl/index.js'
-import './AgentPlayView.css'
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
+import Alert from "react-bootstrap/Alert";
+import Board from "./Board";
+import * as rl from "@app/solitaire-rl/index.js";
+import "./AgentPlayView.css";
 
-const assetUrl = path => `${import.meta.env.BASE_URL}${path}`
+const assetUrl = (path) => `${import.meta.env.BASE_URL}${path}`;
 
-const modelPath = assetUrl('model/model.json')
+const modelPath = assetUrl("model/model.json");
 
-const useQuery = () => new URLSearchParams(useLocation().search)
+const useQuery = () => new URLSearchParams(useLocation().search);
 
 const AgentPlayView = () => {
+  const query = useQuery();
+  const [selectedAgent, setSelectedAgent] = useState(
+    () => query.get("agent") || "random"
+  );
+  const [agent, setAgent] = useState(null);
+  const [resetBoard, setResetBoard] = useState(true);
+  const [entries, setEntries] = useState(agent?.entries() ?? []);
+  const [action, setAction] = useState(null);
+  const [running, setRunning] = useState(false);
+  const [fetchingModel, setFetchingModel] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [finalReward, setFinalReward] = useState(null);
 
-  const query = useQuery()
-  const [selectedAgent, setSelectedAgent] = useState(() => query.get('agent') || 'random')
-  const [agent, setAgent] = useState(null)
-  const [resetBoard, setResetBoard] = useState(true)
-  const [entries, setEntries] = useState(agent?.entries() ?? [])
-  const [action, setAction] = useState(null)
-  const [running, setRunning] = useState(false)
-  const [fetchingModel, setFetchingModel] = useState(false)
-  const [errorMessage, setErrorMessage] = useState(null)
-  const [finalReward, setFinalReward] = useState(null)
-
-  const runTimerRef = useRef(null)
+  const runTimerRef = useRef(null);
 
   useEffect(() => {
-    return () => clearInterval(runTimerRef.current)
-  }, [])
+    return () => clearInterval(runTimerRef.current);
+  }, []);
 
-  const makeAgent = async agentName => {
+  const makeAgent = async (agentName) => {
     switch (agentName) {
-
-      case 'trained': {
-        setFetchingModel(true)
+      case "trained": {
+        setFetchingModel(true);
         try {
-          setErrorMessage(null)
-          const agent = await rl.makeTrainedAgentFromModelPath(modelPath)
-          setAgent(agent)
+          setErrorMessage(null);
+          const agent = await rl.makeTrainedAgentFromModelPath(modelPath);
+          setAgent(agent);
         } catch (error) {
-          setErrorMessage(error.message)
-          setSelectedAgent('random')
+          setErrorMessage(error.message);
+          setSelectedAgent("random");
         } finally {
-          setFetchingModel(false)
+          setFetchingModel(false);
         }
-        break
+        break;
       }
 
-      case 'random':
+      case "random":
       default: {
-        const agent = rl.makeRandomAgent()
-        setAgent(agent)
-        break
+        const agent = rl.makeRandomAgent();
+        setAgent(agent);
+        break;
       }
     }
-  }
+  };
 
   useEffect(() => {
-    makeAgent(selectedAgent)
-  }, [selectedAgent])
+    makeAgent(selectedAgent);
+  }, [selectedAgent]);
 
   const onStep = () => {
-    const stepResult = agent.step()
-    setResetBoard(false)
-    setEntries(stepResult.entries)
-    setAction(stepResult.action)
+    const stepResult = agent.step();
+    setResetBoard(false);
+    setEntries(stepResult.entries);
+    setAction(stepResult.action);
     if (stepResult.done) {
-      setFinalReward(stepResult.reward)
+      setFinalReward(stepResult.reward);
     }
-  }
+  };
 
   const onRun = () => {
-    setRunning(true)
-    onStep()
+    setRunning(true);
+    onStep();
     runTimerRef.current = setInterval(() => {
       if (agent.done) {
-        clearInterval(runTimerRef.current)
-        setRunning(false)
+        clearInterval(runTimerRef.current);
+        setRunning(false);
       } else {
-        onStep()
+        onStep();
       }
-    }, 1000)
-  }
+    }, 1000);
+  };
 
   const onStop = () => {
-    clearInterval(runTimerRef.current)
-    setRunning(false)
-  }
+    clearInterval(runTimerRef.current);
+    setRunning(false);
+  };
 
   const onReset = useCallback(() => {
     if (agent) {
-      agent.reset()
-      setResetBoard(true)
-      setEntries(agent.entries())
-      setAction(null)
-      setFinalReward(null)
+      agent.reset();
+      setResetBoard(true);
+      setEntries(agent.entries());
+      setAction(null);
+      setFinalReward(null);
     }
-  }, [agent])
+  }, [agent]);
 
-  useEffect(onReset, [onReset])
+  useEffect(onReset, [onReset]);
 
-  const onChangeSelectedAgent = e =>
-    setSelectedAgent(e.target.value)
+  const onChangeSelectedAgent = (e) => setSelectedAgent(e.target.value);
 
   return (
     <div className="agent-play-content">
       <div className="board-wrapper">
-
         <div className="board-controls-above">
-          <select value={selectedAgent} onChange={onChangeSelectedAgent} disabled={running || fetchingModel}>
+          <select
+            value={selectedAgent}
+            onChange={onChangeSelectedAgent}
+            disabled={running || fetchingModel}
+          >
             <option value="random">Random Agent</option>
             <option value="trained">Trained Agent</option>
           </select>
-          {fetchingModel && <span className="model-loading">Loading model…</span>}
+          {fetchingModel && (
+            <span className="model-loading">Loading model…</span>
+          )}
         </div>
 
         <Board
@@ -125,29 +129,54 @@ const AgentPlayView = () => {
 
         <div className="board-controls-below">
           <div>
-            <button type="button" disabled={agent === null || agent.done || running || fetchingModel} onClick={onStep}>Step</button>
-            {running
-              ? <button type="button" onClick={onStop}>Stop</button>
-              : <button type="button" disabled={agent === null || agent.done || fetchingModel} onClick={onRun}>Run</button>
-            }
-            <button type="button" disabled={agent === null || running} onClick={onReset}>Reset</button>
+            <button
+              type="button"
+              disabled={
+                agent === null || agent.done || running || fetchingModel
+              }
+              onClick={onStep}
+            >
+              Step
+            </button>
+            {running ? (
+              <button type="button" onClick={onStop}>
+                Stop
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={agent === null || agent.done || fetchingModel}
+                onClick={onRun}
+              >
+                Run
+              </button>
+            )}
+            <button
+              type="button"
+              disabled={agent === null || running}
+              onClick={onReset}
+            >
+              Reset
+            </button>
           </div>
           {finalReward !== null && <div>Final Reward: {finalReward}</div>}
         </div>
-
       </div>
 
-      {
-        errorMessage && (
-          <div className="alert-wrapper">
-            <Alert transition={false} variant="danger" dismissible onClose={() => setErrorMessage(null)}>
-              {errorMessage}
-            </Alert>
-          </div>
-        )
-      }
+      {errorMessage && (
+        <div className="alert-wrapper">
+          <Alert
+            transition={false}
+            variant="danger"
+            dismissible
+            onClose={() => setErrorMessage(null)}
+          >
+            {errorMessage}
+          </Alert>
+        </div>
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default AgentPlayView
+export default AgentPlayView;
