@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Alert from "react-bootstrap/Alert";
-import Board from "./Board";
+import Board from "@app/components/Board";
 import * as rl from "@app/solitaire-rl/index.js";
 import "./AgentPlayView.css";
 

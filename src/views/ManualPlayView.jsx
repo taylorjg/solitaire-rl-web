@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import Board from "./Board";
+import Board from "@app/components/Board";
 import * as rl from "@app/solitaire-rl/index.js";
 import "./ManualPlayView.css";
 

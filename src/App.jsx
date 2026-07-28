@@ -1,8 +1,8 @@
 import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import Navigation from "@app/components/Navigation";
-import ManualPlayView from "@app/components/ManualPlayView";
-import AgentPlayView from "@app/components/AgentPlayView";
-import TrainingView from "@app/components/TrainingView";
+import ManualPlayView from "@app/views/ManualPlayView";
+import AgentPlayView from "@app/views/AgentPlayView";
+import TrainingView from "@app/views/TrainingView";
 import Version from "@app/components/Version";
 import { ROUTES } from "./routes";
 import "./App.css";
