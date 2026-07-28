@@ -1,4 +1,4 @@
-import tf from '@tensorflow/tfjs'
+import * as tf from '@tensorflow/tfjs'
 import { SolitaireEnv, observationToBoard, boardToObservation, Board, ACTIONS } from './solitaire-env.mjs'
 import * as U from './utils.mjs'
 

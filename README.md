@@ -161,18 +161,27 @@ These results compare favourably with the baseline results given above.
 
 # Running Locally
 
-Requires Node.js 16 (see `.nvmrc`). CRA 4 does not work on Node 20+.
+Requires Node.js 24 (see `.nvmrc`).
 
 ```
 nvm use
 npm install
-PUBLIC_URL=. npm start
+npm run dev
 ```
+
+Open http://localhost:5173/solitaire-rl-web/
 
 Run tests:
 
 ```
 npm run test:ci
+```
+
+Build for production:
+
+```
+npm run build
+npm run preview
 ```
 
 # Screenshots

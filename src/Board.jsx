@@ -18,6 +18,8 @@ const makeRandomRotationsMap = () => new Map(makeRandomRotationKvps())
 const makeTransformStyle = angle => `rotate(${angle}deg)`
 const makeTransformOriginStyle = (cx, cy) => `${cx}% ${cy}%`
 
+const assetUrl = path => `${import.meta.env.BASE_URL}${path}`
+
 const Board = ({
   resetBoard,
   entries,
@@ -237,10 +239,10 @@ const Board = ({
       <svg className="board" viewBox="0 0 100 100">
         <defs>
           <pattern id="board" height="100%" width="100%" patternContentUnits="objectBoundingBox">
-            <image href="images/board.jpeg" preserveAspectRatio="none" width="1" height="1" />
+            <image href={assetUrl('images/board.jpeg')} preserveAspectRatio="none" width="1" height="1" />
           </pattern>
           <pattern id="marble" height="100%" width="100%" patternContentUnits="objectBoundingBox">
-            <image href="images/marble.png" preserveAspectRatio="none" width="1" height="1" />
+            <image href={assetUrl('images/marble.png')} preserveAspectRatio="none" width="1" height="1" />
           </pattern>
         </defs>
         <rect className="board-background"></rect>

@@ -5,7 +5,9 @@ import Board from './Board'
 import * as rl from './solitaire-rl/index.mjs'
 import './AgentPlayView.css'
 
-const modelPath = 'model/model.json'
+const assetUrl = path => `${import.meta.env.BASE_URL}${path}`
+
+const modelPath = assetUrl('model/model.json')
 
 const useQuery = () => new URLSearchParams(useLocation().search)
 
@@ -23,8 +25,6 @@ const AgentPlayView = () => {
   const [finalReward, setFinalReward] = useState(null)
 
   const runTimerRef = useRef(null)
-
-  console.log(`errorMessage: ${errorMessage}`)
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
