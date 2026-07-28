@@ -156,9 +156,9 @@ const TrainingView = () => {
       default:
         return ''
       case 1:
-        return 'bg-success'
+        return 'table-success'
       case 2:
-        return 'bg-danger'
+        return 'table-danger'
     }
   }
 
