@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 export const usePerSecondCounter = () => {
 
@@ -25,33 +25,4 @@ export const usePerSecondCounter = () => {
   }
 
   return [fps, increment, reset]
-}
-
-export const useElapsedTime = () => {
-
-  const [start, setStart] = useState(0)
-  const [elapsed, setElapsed] = useState(0)
-
-  const update = () => {
-    const now = performance.now()
-    setElapsed(now - start)
-  }
-
-  const reset = () => {
-    setStart(performance.now())
-    setElapsed(0)
-  }
-
-  return [elapsed, update, reset]
-}
-
-export const useCallbackWrapper = cb => {
-  const cbRef = useRef(null)
-  cbRef.current = cb
-  const cbWrapper = (...args) => {
-    if (cbRef.current) {
-      return cbRef.current(...args)
-    }
-  }
-  return cbWrapper
 }

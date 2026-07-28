@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import Table from 'react-bootstrap/Table'
 import * as tfvis from '@tensorflow/tfjs-vis'
-import { useElapsedTime, usePerSecondCounter, useCallbackWrapper } from './customHooks'
+import { useElapsedTime } from '@app/hooks/useElapsedTime'
+import { usePerSecondCounter } from '@app/hooks/usePerSecondCounter'
 import Board from './Board'
 import * as rl from '@app/solitaire-rl/index.js'
 import * as U from '@app/solitaire-rl/utils.js'
@@ -21,6 +22,8 @@ const TrainingView = () => {
 
   const chartElementRef = useRef()
   const chartValuesRef = useRef([[], []])
+  const cancelledRef = useRef(false)
+  cancelledRef.current = cancelled
 
   const [elapsedTime, updateTimer, resetTimer] = useElapsedTime()
   const [eps, updateEps, resetEps] = usePerSecondCounter()
@@ -62,13 +65,6 @@ const TrainingView = () => {
     updateEps()
   }
 
-  const onCheckCancelled = () => cancelled
-
-  const onTrainingSuccessCallbackWrapper = useCallbackWrapper(onTrainingSuccess)
-  const onTrainingFailureCallbackWrapper = useCallbackWrapper(onTrainingFailure)
-  const onProgressCallbackWrapper = useCallbackWrapper(onProgress)
-  const onCheckCancelledCallbackWrapper = useCallbackWrapper(onCheckCancelled)
-
   const resetChartValues = () => {
     chartValuesRef.current = [[], []]
   }
@@ -108,6 +104,7 @@ const TrainingView = () => {
       if (training) return
       setTraining(true)
       setTrainingOutcome(0)
+      cancelledRef.current = false
       setCancelled(false)
       resetTimer()
       resetEps()
@@ -118,10 +115,10 @@ const TrainingView = () => {
       setEntries([])
 
       const callbacks = {
-        trainingSuccess: onTrainingSuccessCallbackWrapper,
-        trainingFailure: onTrainingFailureCallbackWrapper,
-        progress: onProgressCallbackWrapper,
-        checkCancelled: onCheckCancelledCallbackWrapper
+        trainingSuccess: onTrainingSuccess,
+        trainingFailure: onTrainingFailure,
+        progress: onProgress,
+        checkCancelled: () => cancelledRef.current,
       }
 
       await rl.train(selectedEndCondition, callbacks)
@@ -134,6 +131,7 @@ const TrainingView = () => {
   }
 
   const onCancel = () => {
+    cancelledRef.current = true
     setCancelled(true)
     resetEps()
     setChartVisible(true)
