@@ -1,5 +1,5 @@
 import { version } from "../../package.json";
-import "./Version.css";
+import "./version.css";
 
 const Version = () => <div className="version">version: {version}</div>;
 

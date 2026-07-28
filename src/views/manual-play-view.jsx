@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import Board from "@app/components/Board";
+import Board from "@app/components/board";
 import * as rl from "@app/solitaire-rl/index.js";
-import "./ManualPlayView.css";
+import "./manual-play-view.css";
 
 const ManualPlayView = () => {
   const [env] = useState(() => new rl.SolitaireEnv());

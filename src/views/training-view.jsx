@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import Table from "react-bootstrap/Table";
 import * as tfvis from "@tensorflow/tfjs-vis";
-import { useElapsedTime } from "@app/hooks/useElapsedTime";
-import { usePerSecondCounter } from "@app/hooks/usePerSecondCounter";
-import Board from "@app/components/Board";
+import { useElapsedTime } from "@app/hooks/use-elapsed-time";
+import { usePerSecondCounter } from "@app/hooks/use-per-second-counter";
+import Board from "@app/components/board";
 import * as rl from "@app/solitaire-rl/index.js";
 import * as U from "@app/solitaire-rl/utils.js";
-import "./TrainingView.css";
+import "./training-view.css";
 
 const TrainingView = () => {
   const [selectedEndCondition, setSelectedEndCondition] =

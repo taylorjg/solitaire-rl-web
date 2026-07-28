@@ -42,7 +42,7 @@ export default [
     },
   },
   {
-    files: ["**/*.{test,spec}.{js,jsx}", "src/setupTests.js"],
+    files: ["**/*.{test,spec}.{js,jsx}", "src/setup-tests.js"],
     plugins: { vitest },
     rules: {
       ...vitest.configs.recommended.rules,

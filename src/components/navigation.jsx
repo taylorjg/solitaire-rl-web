@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { ROUTES } from "@app/routes";
-import "./Navigation.css";
+import "./navigation.css";
 
 const navLinkClassName = ({ isActive }) =>
   isActive ? "navigation-link--active" : undefined;

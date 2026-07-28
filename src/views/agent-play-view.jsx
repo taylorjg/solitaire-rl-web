@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Alert from "react-bootstrap/Alert";
-import Board from "@app/components/Board";
+import Board from "@app/components/board";
 import * as rl from "@app/solitaire-rl/index.js";
-import "./AgentPlayView.css";
+import "./agent-play-view.css";
 
 const assetUrl = (path) => `${import.meta.env.BASE_URL}${path}`;
 

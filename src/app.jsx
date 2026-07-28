@@ -1,11 +1,11 @@
 import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
-import Navigation from "@app/components/Navigation";
-import ManualPlayView from "@app/views/ManualPlayView";
-import AgentPlayView from "@app/views/AgentPlayView";
-import TrainingView from "@app/views/TrainingView";
-import Version from "@app/components/Version";
+import Navigation from "@app/components/navigation";
+import ManualPlayView from "@app/views/manual-play-view";
+import AgentPlayView from "@app/views/agent-play-view";
+import TrainingView from "@app/views/training-view";
+import Version from "@app/components/version";
 import { ROUTES } from "./routes";
-import "./App.css";
+import "./app.css";
 
 const App = () => {
   return (

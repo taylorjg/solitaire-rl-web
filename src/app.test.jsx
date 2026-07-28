@@ -8,7 +8,7 @@ vi.mock("@tensorflow/tfjs", () => ({
 vi.mock("@tensorflow/tfjs-vis", () => ({}));
 
 import { render, screen } from "@testing-library/react";
-import App from "./App";
+import App from "./app";
 
 test("renders step button", () => {
   render(<App />);
