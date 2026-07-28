@@ -15,12 +15,12 @@ continue to try to discover better ways to apply reinforcement learning to this 
 # Brute Force Approach
 
 As a baseline, I wrote a naive bit of code to find a solution by brute force using
-a depth-first search - see [bruteForce.js](console/bruteForce.js).
+a depth-first search - see [brute-force.js](console/brute-force.js).
 This code is entirely deterministic. It finds the first solution after 3,730,510 episodes.
 On my MacBook Pro (Mid 2014), this takes about 5 minutes:
 
 ```
-$ node console/bruteForce.js
+$ node console/brute-force.js
 ...
 solution: [7,13,0,4,20,11,22,29,32,0,30,32,40,3,45,40,66,47,50,5,35,58,8,65,57,74,41,72,74,63,68]
 episodes: 3730510
