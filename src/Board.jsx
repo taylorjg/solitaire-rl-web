@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
-import { Spring } from 'react-spring/renderprops.cjs'
+import { animated, useSpring } from '@react-spring/web'
 import * as rl from './solitaire-rl/index.mjs'
 import './Board.css'
 
@@ -19,6 +19,90 @@ const makeTransformStyle = angle => `rotate(${angle}deg)`
 const makeTransformOriginStyle = (cx, cy) => `${cx}% ${cy}%`
 
 const assetUrl = path => `${import.meta.env.BASE_URL}${path}`
+
+const AnimatedMovingMarble = ({
+  cxFrom,
+  cyFrom,
+  cxTo,
+  cyTo,
+  angleFrom,
+  angleTo,
+  onClick
+}) => {
+  const springs = useSpring({
+    from: {
+      cx: cxFrom,
+      cy: cyFrom,
+      transform: makeTransformStyle(angleFrom),
+      transformOrigin: makeTransformOriginStyle(cxFrom, cyFrom),
+    },
+    to: {
+      cx: cxTo,
+      cy: cyTo,
+      transform: makeTransformStyle(angleTo),
+      transformOrigin: makeTransformOriginStyle(cxTo, cyTo),
+    },
+    config: { duration: 600 },
+  })
+
+  return (
+    <animated.circle
+      cx={springs.cx}
+      cy={springs.cy}
+      r={MARBLE_RADIUS}
+      className="board-marble"
+      onClick={onClick}
+      style={{
+        transform: springs.transform,
+        transformOrigin: springs.transformOrigin,
+      }}
+    />
+  )
+}
+
+AnimatedMovingMarble.propTypes = {
+  cxFrom: PropTypes.number.isRequired,
+  cyFrom: PropTypes.number.isRequired,
+  cxTo: PropTypes.number.isRequired,
+  cyTo: PropTypes.number.isRequired,
+  angleFrom: PropTypes.number.isRequired,
+  angleTo: PropTypes.number.isRequired,
+  onClick: PropTypes.func,
+}
+
+const AnimatedViaMarble = ({ cx, cy, angle, undo, onClick, onRest }) => {
+  const springs = useSpring({
+    from: { opacity: undo ? 0 : 1 },
+    to: { opacity: undo ? 1 : 0 },
+    config: { duration: 300 },
+    delay: undo ? 0 : 300,
+    onRest,
+  })
+
+  return (
+    <animated.circle
+      cx={cx}
+      cy={cy}
+      r={MARBLE_RADIUS}
+      className="board-marble"
+      onClick={onClick}
+      style={{
+        transform: makeTransformStyle(angle),
+        transformOrigin: makeTransformOriginStyle(cx, cy),
+        opacity: springs.opacity,
+      }}
+    />
+  )
+}
+
+AnimatedViaMarble.propTypes = {
+  cx: PropTypes.number.isRequired,
+  cy: PropTypes.number.isRequired,
+  angle: PropTypes.number.isRequired,
+  undo: PropTypes.bool,
+  onClick: PropTypes.func,
+  onRest: PropTypes.func,
+}
 
 const Board = ({
   resetBoard,
@@ -106,7 +190,6 @@ const Board = ({
         classNames.push('board-hole--selected')
       }
       const props = {
-        key: `hole-${location.key}`,
         cx,
         cy,
         r: HOLE_RADIUS,
@@ -115,7 +198,7 @@ const Board = ({
         onMouseOver: onMouseOverHole(location),
         onMouseOut: onMouseOutHole
       }
-      return <circle {...props} />
+      return <circle key={`hole-${location.key}`} {...props} />
     })
   }
 
@@ -140,7 +223,6 @@ const Board = ({
     const [cx, cy] = locationToCircleCentre(location)
     const angle = randomRotations.get(location.key)
     const props = {
-      key: location.key,
       cx,
       cy,
       r: MARBLE_RADIUS,
@@ -151,12 +233,11 @@ const Board = ({
       transform: makeTransformStyle(angle),
       transformOrigin: makeTransformOriginStyle(cx, cy)
     }
-    return <circle {...props} style={style} />
+    return <circle key={location.key} {...props} style={style} />
   }
 
   const renderViaMarble = () => {
     if (!action) return null
-    // TODO: introduce hideMarble/setHideMarble state ?
     if (!undo && !showViaMarble) return null
     const viaLocation = action.viaLocation
     const [cx, cy] = locationToCircleCentre(viaLocation)
@@ -164,27 +245,16 @@ const Board = ({
     const maybeOnClick = undo
       ? { onClick: onSelectMarble(viaLocation) }
       : undefined
-    const props = {
-      cx,
-      cy,
-      r: MARBLE_RADIUS,
-      className: 'board-marble',
-      ...maybeOnClick
-    }
-    const style = {
-      transform: makeTransformStyle(angle),
-      transformOrigin: makeTransformOriginStyle(cx, cy)
-    }
     return (
-      <Spring
+      <AnimatedViaMarble
         key={viaLocation.key}
-        config={{ duration: 300, delay: 300 }}
-        from={{ opacity: undo ? 0 : 1 }}
-        to={{ opacity: undo ? 1 : 0 }}
+        cx={cx}
+        cy={cy}
+        angle={angle}
+        undo={undo}
         onRest={() => setShowViaMarble(false)}
-      >
-        {springProps => <circle {...props} style={{ ...style, ...springProps }} />}
-      </Spring>
+        {...maybeOnClick}
+      />
     )
   }
 
@@ -193,32 +263,17 @@ const Board = ({
     const [cxTo, cyTo] = locationToCircleCentre(endLocation)
     const angleFrom = randomRotations.get(startLocation.key)
     const angleTo = randomRotations.get(endLocation.key)
-    const props = {
-      cx: cxFrom,
-      cy: cyFrom,
-      r: MARBLE_RADIUS,
-      className: 'board-marble',
-      onClick: onSelectMarble(endLocation)
-    }
     return (
-      <Spring
+      <AnimatedMovingMarble
         key={endLocation.key}
-        config={{ duration: 600 }}
-        from={{
-          cx: cxFrom,
-          cy: cyFrom,
-          transform: makeTransformStyle(angleFrom),
-          transformOrigin: makeTransformOriginStyle(cxFrom, cyFrom)
-        }}
-        to={{
-          cx: cxTo,
-          cy: cyTo,
-          transform: makeTransformStyle(angleTo),
-          transformOrigin: makeTransformOriginStyle(cxTo, cyTo)
-        }}
-      >
-        {springProps => <circle {...props} style={springProps} />}
-      </Spring>
+        cxFrom={cxFrom}
+        cyFrom={cyFrom}
+        cxTo={cxTo}
+        cyTo={cyTo}
+        angleFrom={angleFrom}
+        angleTo={angleTo}
+        onClick={onSelectMarble(endLocation)}
+      />
     )
   }
 

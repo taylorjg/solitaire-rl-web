@@ -2,18 +2,21 @@ import { NavLink } from 'react-router-dom'
 import { ROUTES } from './routes'
 import './Navigation.css'
 
+const navLinkClassName = ({ isActive }) =>
+  isActive ? 'navigation-link--active' : undefined
+
 const Navigation = () => {
   return (
     <div className="navigation">
       <ul>
         <li>
-          <NavLink to={ROUTES.manualPlayView} activeClassName="navigation-link--active">Manual Play</NavLink>
+          <NavLink to={ROUTES.manualPlayView} className={navLinkClassName}>Manual Play</NavLink>
         </li>
         <li>
-          <NavLink to={ROUTES.agentPlayView} activeClassName="navigation-link--active">Agent Play</NavLink>
+          <NavLink to={ROUTES.agentPlayView} className={navLinkClassName}>Agent Play</NavLink>
         </li>
         <li>
-          <NavLink to={ROUTES.trainingView} activeClassName="navigation-link--active">Training</NavLink>
+          <NavLink to={ROUTES.trainingView} className={navLinkClassName}>Training</NavLink>
         </li>
       </ul>
     </div>

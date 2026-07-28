@@ -1,4 +1,4 @@
-import { HashRouter as Router, Switch, Route, Redirect } from "react-router-dom"
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Navigation from './Navigation'
 import ManualPlayView from './ManualPlayView'
 import AgentPlayView from './AgentPlayView'
@@ -9,28 +9,20 @@ import './App.css'
 
 const App = () => {
   return (
-    <Router>
+    <HashRouter>
       <div className="app-layout">
         <Navigation />
         <div className="app-layout-content">
-          <Switch>
-            <Route path={ROUTES.manualPlayView}>
-              <ManualPlayView />
-            </Route>
-            <Route path={ROUTES.agentPlayView}>
-              <AgentPlayView />
-            </Route>
-            <Route path={ROUTES.trainingView}>
-              <TrainingView />
-            </Route>
-            <Route path={ROUTES.home}>
-              <Redirect to={ROUTES.agentPlayView} />
-            </Route>
-          </Switch>
+          <Routes>
+            <Route path={ROUTES.manualPlayView} element={<ManualPlayView />} />
+            <Route path={ROUTES.agentPlayView} element={<AgentPlayView />} />
+            <Route path={ROUTES.trainingView} element={<TrainingView />} />
+            <Route path={ROUTES.home} element={<Navigate to={ROUTES.agentPlayView} replace />} />
+          </Routes>
         </div>
         <Version />
       </div>
-    </Router>
+    </HashRouter>
   )
 }
 

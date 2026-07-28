@@ -27,11 +27,39 @@ const AgentPlayView = () => {
   const runTimerRef = useRef(null)
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     return () => clearInterval(runTimerRef.current)
   }, [])
 
-  useEffect(() => makeAgent(selectedAgent), [selectedAgent])
+  const makeAgent = async agentName => {
+    switch (agentName) {
+
+      case 'trained': {
+        setFetchingModel(true)
+        try {
+          setErrorMessage(null)
+          const agent = await rl.makeTrainedAgentFromModelPath(modelPath)
+          setAgent(agent)
+        } catch (error) {
+          setErrorMessage(error.message)
+          setSelectedAgent('random')
+        } finally {
+          setFetchingModel(false)
+        }
+        break
+      }
+
+      case 'random':
+      default: {
+        const agent = rl.makeRandomAgent()
+        setAgent(agent)
+        break
+      }
+    }
+  }
+
+  useEffect(() => {
+    makeAgent(selectedAgent)
+  }, [selectedAgent])
 
   const onStep = () => {
     const stepResult = agent.step()
@@ -72,33 +100,6 @@ const AgentPlayView = () => {
   }, [agent])
 
   useEffect(onReset, [onReset])
-
-  const makeAgent = async agentName => {
-    switch (agentName) {
-
-      case 'trained': {
-        setFetchingModel(true)
-        try {
-          setErrorMessage(null)
-          const agent = await rl.makeTrainedAgentFromModelPath(modelPath)
-          setAgent(agent)
-        } catch (error) {
-          setErrorMessage(error.message)
-          setSelectedAgent('random')
-        } finally {
-          setFetchingModel(false)
-        }
-        break
-      }
-
-      case 'random':
-      default: {
-        const agent = rl.makeRandomAgent()
-        setAgent(agent)
-        break
-      }
-    }
-  }
 
   const onChangeSelectedAgent = e =>
     setSelectedAgent(e.target.value)
