@@ -1,4 +1,4 @@
-import * as U from './utils.mjs'
+import * as U from './utils.js'
 
 describe('utils', () => {
 

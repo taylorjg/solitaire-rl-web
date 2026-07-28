@@ -1,4 +1,4 @@
-import * as U from './utils.mjs'
+import * as U from './utils.js'
 
 const UP = 0
 const DOWN = 1

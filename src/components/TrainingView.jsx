@@ -3,8 +3,8 @@ import Table from 'react-bootstrap/Table'
 import * as tfvis from '@tensorflow/tfjs-vis'
 import { useElapsedTime, usePerSecondCounter, useCallbackWrapper } from './customHooks'
 import Board from './Board'
-import * as rl from './solitaire-rl/index.mjs'
-import * as U from './solitaire-rl/utils.mjs'
+import * as rl from '@app/solitaire-rl/index.js'
+import * as U from '@app/solitaire-rl/utils.js'
 import './TrainingView.css'
 
 const TrainingView = () => {

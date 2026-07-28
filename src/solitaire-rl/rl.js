@@ -1,7 +1,7 @@
 import '@tensorflow/tfjs-backend-cpu'
 import * as tf from '@tensorflow/tfjs'
-import { SolitaireEnv, observationToBoard, boardToObservation, Board, ACTIONS } from './solitaire-env.mjs'
-import * as U from './utils.mjs'
+import { SolitaireEnv, observationToBoard, boardToObservation, Board, ACTIONS } from './solitaire-env.js'
+import * as U from './utils.js'
 
 const tfConfigure = async () => {
   await tf.ready()

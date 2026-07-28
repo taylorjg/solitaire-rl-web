@@ -1,4 +1,4 @@
-import { SolitaireEnv, observationToBoard } from './solitaire-env.mjs'
+import { SolitaireEnv, observationToBoard } from './solitaire-env.js'
 
 const solutionActions = [
   68, 49, 71, 33, 75, 71, 5, 11,

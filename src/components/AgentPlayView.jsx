@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import Alert from 'react-bootstrap/Alert'
 import Board from './Board'
-import * as rl from './solitaire-rl/index.mjs'
+import * as rl from '@app/solitaire-rl/index.js'
 import './AgentPlayView.css'
 
 const assetUrl = path => `${import.meta.env.BASE_URL}${path}`

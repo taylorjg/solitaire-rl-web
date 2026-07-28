@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { animated, useSpring } from '@react-spring/web'
-import * as rl from './solitaire-rl/index.mjs'
+import * as rl from '@app/solitaire-rl/index.js'
 import './Board.css'
 
 const GRID_X = 100 / 8
