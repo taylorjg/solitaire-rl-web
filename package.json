@@ -45,5 +45,8 @@
     "test": "vitest",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
+  },
+  "allowScripts": {
+    "preact@8.2.9": true
   }
 }
