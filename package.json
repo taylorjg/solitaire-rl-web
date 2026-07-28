@@ -32,7 +32,6 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest",
-    "test:ci": "vitest run",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
   }

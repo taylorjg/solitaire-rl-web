@@ -174,7 +174,7 @@ Open http://localhost:5173/solitaire-rl-web/
 Run tests:
 
 ```
-npm run test:ci
+npm test
 ```
 
 Build for production:
