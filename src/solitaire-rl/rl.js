@@ -202,12 +202,13 @@ const trainLoop = async (env, model, pi, endCondition, callbacks) => {
 
         if (checkEndCondition(endCondition, model, env)) {
           optimizer.dispose();
-          return callbacks.trainingSuccess(model, actions);
+          await callbacks.trainingSuccess(model, actions);
+          return true;
         }
 
         if (callbacks.checkCancelled()) {
           optimizer.dispose();
-          return;
+          return false;
         }
 
         await tf.nextFrame();
@@ -218,6 +219,7 @@ const trainLoop = async (env, model, pi, endCondition, callbacks) => {
 
   callbacks.trainingFailure(model);
   optimizer.dispose();
+  return false;
 };
 
 class BaseAgent {
@@ -283,8 +285,9 @@ class HardcodedActionsAgent extends BaseAgent {
   }
 
   reset() {
-    super.reset();
+    const state = super.reset();
     this._index = 0;
+    return state;
   }
 }
 
@@ -308,8 +311,9 @@ class TrainedAgent extends BaseAgent {
   }
 
   reset() {
-    super.reset();
+    const state = super.reset();
     this._isInitialMove = true;
+    return state;
   }
 }
 
@@ -333,7 +337,9 @@ export const train = async (endCondition, callbacks) => {
   const env = new SolitaireEnv();
   const model = makeModel();
   const pi = makePolicy(model);
-  await trainLoop(env, model, pi, endCondition, callbacks);
-  model.dispose();
+  const succeeded = await trainLoop(env, model, pi, endCondition, callbacks);
+  if (!succeeded) {
+    model.dispose();
+  }
   console.log(JSON.stringify(tf.memory()));
 };

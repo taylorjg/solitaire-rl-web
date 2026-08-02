@@ -13,7 +13,6 @@ const TrainingView = () => {
     useState("endCondition1");
   const [training, setTraining] = useState(false);
   const [trainingOutcome, setTrainingOutcome] = useState(0);
-  const [cancelled, setCancelled] = useState(false);
   const [stats, setStats] = useState(null);
   const [chartVisible, setChartVisible] = useState(false);
   const [movingAverageAvailable, setMovingAverageAvailable] = useState(false);
@@ -23,10 +22,11 @@ const TrainingView = () => {
   const chartElementRef = useRef();
   const chartValuesRef = useRef([[], []]);
   const cancelledRef = useRef(false);
+  const chartVisibleRef = useRef(chartVisible);
 
   useEffect(() => {
-    cancelledRef.current = cancelled;
-  }, [cancelled]);
+    chartVisibleRef.current = chartVisible;
+  }, [chartVisible]);
 
   const [elapsedTime, updateTimer, resetTimer] = useElapsedTime();
   const [eps, updateEps, resetEps] = usePerSecondCounter();
@@ -62,10 +62,24 @@ const TrainingView = () => {
     setTrainingOutcome(2);
   };
 
-  const onProgress = (stats) => {
-    setStats(stats);
+  const onProgress = (progressStats) => {
+    setStats(progressStats);
     updateTimer();
     updateEps();
+
+    if (progressStats.finalRewardMA === Number.NEGATIVE_INFINITY) {
+      return;
+    }
+
+    setMovingAverageAvailable(true);
+    const x = progressStats.episode;
+    const [lastValues, bestValues] = chartValuesRef.current;
+    lastValues.push({ x, y: progressStats.finalRewardMA });
+    bestValues.push({ x, y: progressStats.bestFinalRewardMA });
+
+    if (chartVisibleRef.current) {
+      showChart();
+    }
   };
 
   const resetChartValues = () => {
@@ -88,19 +102,14 @@ const TrainingView = () => {
   };
 
   useEffect(() => {
-    if (stats) {
-      if (stats.finalRewardMA !== Number.NEGATIVE_INFINITY) {
-        setMovingAverageAvailable(true);
-        const x = stats.episode;
-        const [lastValues, bestValues] = chartValuesRef.current;
-        lastValues.push({ x, y: stats.finalRewardMA });
-        bestValues.push({ x, y: stats.bestFinalRewardMA });
-        if (chartVisible) {
-          showChart();
-        }
-      }
+    if (!chartVisible) {
+      return;
     }
-  }, [stats, chartVisible]);
+    const [lastValues] = chartValuesRef.current;
+    if (lastValues.length > 0) {
+      showChart();
+    }
+  }, [chartVisible]);
 
   const onTrain = async () => {
     try {
@@ -108,7 +117,6 @@ const TrainingView = () => {
       setTraining(true);
       setTrainingOutcome(0);
       cancelledRef.current = false;
-      setCancelled(false);
       resetTimer();
       resetEps();
       setChartVisible(false);
@@ -135,7 +143,6 @@ const TrainingView = () => {
 
   const onCancel = () => {
     cancelledRef.current = true;
-    setCancelled(true);
     resetEps();
     setChartVisible(true);
   };
