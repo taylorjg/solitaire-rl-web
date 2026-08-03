@@ -36,9 +36,17 @@ const makeModel = () => {
   model.add(
     tf.layers.dense({
       inputShape: [33],
-      units: 10,
+      units: 64,
       activation: "tanh",
       name: "input-layer",
+      kernelInitializer,
+    })
+  );
+  model.add(
+    tf.layers.dense({
+      units: 32,
+      activation: "tanh",
+      name: "hidden-layer",
       kernelInitializer,
     })
   );
