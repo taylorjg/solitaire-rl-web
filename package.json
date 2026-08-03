@@ -52,5 +52,8 @@
     "core-js@3.29.1": true,
     "core-js@1.2.7": true,
     "fsevents@2.3.3": true
+  },
+  "overrides": {
+    "rolldown": "1.2.1"
   }
 }
