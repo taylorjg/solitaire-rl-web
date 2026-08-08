@@ -167,7 +167,7 @@ Requires Node.js 24 (see `.nvmrc`).
 
 ```
 nvm use
-npm install
+npm ci
 npm run dev
 ```
 
