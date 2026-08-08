@@ -1,3 +1,5 @@
+[![CI/CD](https://github.com/taylorjg/solitaire-rl-web/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/taylorjg/solitaire-rl-web/actions/workflows/ci-cd.yml)
+
 # Description
 
 For my first foray into reinforcement learning, I decided to try to solve the
