@@ -42,7 +42,7 @@
     "build": "vite build",
     "lint": "eslint src console vite.config.js eslint.config.js --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "test": "vitest run --reporter verbose",
+    "test": "vitest run",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
     "open": "open https://taylorjg.github.io/solitaire-rl-web"
