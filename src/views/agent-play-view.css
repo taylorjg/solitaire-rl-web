@@ -22,7 +22,7 @@
 }
 
 .board-controls-above * {
-  margin: 0 .25rem;
+  margin: 0 0.25rem;
 }
 
 .model-loading {
@@ -40,10 +40,10 @@
 }
 
 .board-controls-below * {
-  margin: 0 .25rem;
+  margin: 0 0.25rem;
 }
 
 .alert-wrapper {
   position: fixed;
-  bottom: .5rem;
+  bottom: 0.5rem;
 }

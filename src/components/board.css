@@ -1,7 +1,7 @@
 .board {
   box-sizing: border-box;
   height: min(100vh, 100vw, 400px);
-  padding: .5rem;
+  padding: 0.5rem;
   width: min(100vh, 100vw, 400px);
 }
 

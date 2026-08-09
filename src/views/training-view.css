@@ -13,7 +13,7 @@
 }
 
 .training-content-inner * {
-  margin: .25rem 0;
+  margin: 0.25rem 0;
 }
 
 .training-warning {
@@ -27,11 +27,11 @@
 }
 
 .training-controls-left * {
-  margin: 0 .25rem;
+  margin: 0 0.25rem;
 }
 
 .training-timer {
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
 }
 
 .training-stats-label {
@@ -39,7 +39,7 @@
 }
 
 .training-stats-value {
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   width: 50%;
 }
 

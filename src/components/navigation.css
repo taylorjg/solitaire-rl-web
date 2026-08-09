@@ -1,7 +1,7 @@
 .navigation {
   display: flex;
   justify-content: center;
-  margin-top: .5rem;
+  margin-top: 0.5rem;
 }
 
 .navigation ul {
@@ -21,5 +21,5 @@
 
 .navigation ul > li + li::before {
   content: "|";
-  margin: 0 .5rem;
+  margin: 0 0.5rem;
 }
